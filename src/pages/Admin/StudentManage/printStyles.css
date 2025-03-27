@@ -1,0 +1,129 @@
+/* 打印样式 */
+.print-container {
+    width: 100%;
+    padding: 10px;
+  }
+  
+  .print-header {
+    margin-bottom: 20px;
+  }
+  
+  .qrcode-row {
+    width: 100%;
+    display: flex;
+    position: relative;
+    margin-bottom: 10px;
+  }
+  
+  .qrcode-item {
+    flex: 1;
+    display: flex;
+    position: relative;
+    padding: 15px;
+    border: 1px solid #f0f0f0;
+  }
+  
+  .qrcode-content {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .student-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+  .qrcode-wrapper {
+    display: flex;
+    justify-content: center;
+    margin: 10px 0;
+  }
+  
+  /* 裁剪线 */
+  .vertical-cut-line {
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100%;
+    display: flex;
+    align-items: center;
+  }
+  
+  .horizontal-cut-line {
+    position: absolute;
+    bottom: -10px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    z-index: 10;
+  }
+  
+  .dashed-line {
+    border: 1px dashed #aaa;
+  }
+  
+  .vertical-cut-line .dashed-line {
+    height: 100%;
+  }
+  
+  .horizontal-cut-line .dashed-line {
+    width: 95%;
+  }
+  
+  .scissors {
+    position: absolute;
+    color: #aaa;
+    font-size: 14px;
+  }
+  
+  .vertical-cut-line .scissors {
+    right: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  
+  .horizontal-cut-line .scissors {
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
+  /* 打印媒体查询 */
+  @media print {
+    body {
+      margin: 0;
+      padding: 0;
+      background: white;
+    }
+    
+    .print-container {
+      width: 210mm;
+      height: 297mm;
+      margin: 0;
+      padding: 10mm;
+    }
+    
+    /* 不打印的元素 */
+    .ant-modal-header,
+    .ant-modal-footer,
+    .ant-modal-close {
+      display: none !important;
+    }
+    
+    /* 分页控制 */
+    .qrcode-row {
+      page-break-inside: avoid;
+    }
+    
+    /* 确保清晰打印 */
+    * {
+      -webkit-print-color-adjust: exact !important;
+      color-adjust: exact !important;
+    }
+  }
