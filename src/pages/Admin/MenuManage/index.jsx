@@ -6,14 +6,16 @@ import {
 } from 'antd';
 import { 
   PlusOutlined, UploadOutlined, DeleteOutlined, EditOutlined,
-  EyeOutlined, CheckCircleOutlined, ClockCircleOutlined
+  EyeOutlined, CheckCircleOutlined, ClockCircleOutlined,
+  NotificationOutlined
 } from '@ant-design/icons';
 import PageLayout from '../../../components/PageLayout';
 import { 
   getAllMeals, 
   createMeal, 
   updateMeal, 
-  deleteMeal 
+  deleteMeal, 
+  notifyUnselectedStudents
 } from '../../../api/meal';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
@@ -39,6 +41,9 @@ const MenuManage = () => {
   const [previewVisible, setPreviewVisible] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
   const [form] = Form.useForm();
+  const [notifyModalVisible, setNotifyModalVisible] = useState(false);
+  const [notifyingMeal, setNotifyingMeal] = useState(null);
+  const [notifying, setNotifying] = useState(false);
 
   const fetchMeals = async () => {
     try {
@@ -163,6 +168,27 @@ const MenuManage = () => {
     setPreviewVisible(true);
   };
 
+  const handleNotifyUnselected = (record) => {
+    setNotifyingMeal(record);
+    setNotifyModalVisible(true);
+  };
+
+  const handleNotifyConfirm = async () => {
+    if (!notifyingMeal) return;
+    
+    try {
+      setNotifying(true);
+      await notifyUnselectedStudents(notifyingMeal.id);
+      message.success('提醒已发送');
+      setNotifyModalVisible(false);
+    } catch (error) {
+      console.error('发送提醒失败:', error);
+      message.error('发送提醒失败');
+    } finally {
+      setNotifying(false);
+    }
+  };
+
   const getMealStatus = (record) => {
     const now = dayjs();
     const selectionStart = dayjs(record.selection_start_time);
@@ -264,7 +290,7 @@ const MenuManage = () => {
     {
       title: '操作',
       key: 'action',
-      width: 200,
+      width: 280,
       render: (_, record) => (
         <Space size="small">
           <Button 
@@ -280,6 +306,14 @@ const MenuManage = () => {
             onClick={() => handlePreview(record.image_path)}
           >
             预览
+          </Button>
+          <Button
+            icon={<NotificationOutlined />}
+            size="small"
+            type="primary"
+            onClick={() => handleNotifyUnselected(record)}
+          >
+            提醒未选餐
           </Button>
           <Popconfirm
             title="确定要删除该餐食吗？此操作将同时删除与之相关的选餐记录和图片。"
@@ -409,6 +443,17 @@ const MenuManage = () => {
           onCancel={() => setPreviewVisible(false)}
         >
           <img alt="预览" style={{ width: '100%' }} src={previewImage} />
+        </Modal>
+
+        <Modal
+          title="提醒未选餐学生"
+          visible={notifyModalVisible}
+          onCancel={() => setNotifyModalVisible(false)}
+          onOk={handleNotifyConfirm}
+          confirmLoading={notifying}
+        >
+          <p>确定要向所有未完成"{notifyingMeal?.name}"选餐的学生和家长发送提醒通知吗？</p>
+          <p>这将通过钉钉发送消息提醒所有未选餐的学生和家长尽快完成选餐。</p>
         </Modal>
       </Spin>
     </PageLayout>

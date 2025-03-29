@@ -69,6 +69,15 @@ export const batchSelectMeals = (data) => {
   });
 };
 
+// 手动提醒未选餐学生
+export const notifyUnselectedStudents = (meal_id) => {
+  return request({
+    url: '/api/admin/notify/unselected',
+    method: 'post',
+    data: { meal_id }
+  });
+};
+
 // ------ 学生选餐 API ------
 
 // 获取学生选餐信息
