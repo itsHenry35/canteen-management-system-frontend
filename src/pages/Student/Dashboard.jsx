@@ -5,7 +5,10 @@ import { useNavigate } from 'react-router-dom';
 import PageLayout from '../../components/PageLayout';
 import { getStudentMealSelection } from '../../api/meal';
 import { getUser } from '../../utils/auth';
-import moment from 'moment';
+import dayjs from 'dayjs';
+import isBetween from 'dayjs/plugin/isBetween';
+
+dayjs.extend(isBetween);
 
 const { Title, Text } = Typography;
 
@@ -45,25 +48,27 @@ const StudentDashboard = () => {
 
   // 格式化日期显示
   const formatDate = (dateString) => {
-    return moment(dateString).format('YYYY-MM-DD HH:mm');
+    return dayjs(dateString).format('YYYY-MM-DD HH:mm');
   };
 
   // 判断餐食状态
   const getMealStatus = (meal) => {
     if (!meal) return { text: '未知', color: '' };
     
-    const now = moment();
-    const selectionStart = moment(meal.selection_start_time);
-    const selectionEnd = moment(meal.selection_end_time);
-    const effectiveStart = moment(meal.effective_start_date);
-    const effectiveEnd = moment(meal.effective_end_date);
+    const now = dayjs();
+    const selectionStart = dayjs(meal.selection_start_time);
+    const selectionEnd = dayjs(meal.selection_end_time);
+    const effectiveStart = dayjs(meal.effective_start_date);
+    const effectiveEnd = dayjs(meal.effective_end_date);
     
     if (now.isBetween(effectiveStart, effectiveEnd)) {
-      return { text: '当前生效中', color: 'success' };
+      return { text: '领取生效中', color: 'success' };
     } else if (now.isBetween(selectionStart, selectionEnd)) {
       return { text: '选餐进行中', color: 'processing' };
     } else if (now.isBefore(selectionStart)) {
-      return { text: '即将开始', color: 'default' };
+      return { text: '选餐即将开始', color: 'default' };
+    } else if (now.isBetween(selectionEnd, effectiveStart)) {
+      return { text: '选餐已结束，领取暂未生效', color: 'default' };
     } else {
       return { text: '已过期', color: 'default' };
     }
@@ -73,7 +78,6 @@ const StudentDashboard = () => {
   const getSelectableMeal = () => {
     return meals.find(meal => meal.selectable);
   };
-
 
   // 渲染可选餐提示
   const renderSelectionAlert = () => {
@@ -218,7 +222,7 @@ const StudentDashboard = () => {
             <Card title={<span><BookOutlined /> 选餐须知</span>}>
               <ul>
                 <li>请在规定的选餐时间内完成选餐</li>
-                <li>如在规定时间内未选餐，系统将自动分配餐食</li>
+                <li>如在规定时间内未选餐，系统将自动随机分配餐食</li>
                 <li>选餐完成后可在选餐时间内修改</li>
                 <li>选餐时间结束后将无法修改</li>
                 <li>就餐时出示二维码供食堂工作人员扫描</li>

@@ -19,10 +19,12 @@ import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
+import isBetween from 'dayjs/plugin/isBetween';
 
 dayjs.extend(customParseFormat);
 dayjs.extend(utc);
 dayjs.extend(timezone);
+dayjs.extend(isBetween);
 
 const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
@@ -168,13 +170,13 @@ const MenuManage = () => {
     const effectiveStart = dayjs(record.effective_start_date);
     const effectiveEnd = dayjs(record.effective_end_date);
 
-    if (now.isAfter(effectiveStart) && now.isBefore(effectiveEnd)) {
+    if (now.isBetween(effectiveStart, effectiveEnd)) {
       return { status: 'active', text: '领取生效中' };
-    } else if (now.isAfter(selectionStart) && now.isBefore(selectionEnd)) {
+    } else if (now.isBetween(selectionStart, selectionEnd)) {
       return { status: 'selecting', text: '选餐进行中' };
     } else if (now.isBefore(selectionStart)) {
-      return { status: 'upcoming', text: '即将开始' };
-    } else if (now.isAfter(selectionEnd) && now.isBefore(effectiveStart)) {
+      return { status: 'upcoming', text: '选餐即将开始' };
+    } else if (now.isBetween(selectionEnd, effectiveStart)) {
       return { status: 'upcoming', text: '选餐已结束，领取暂未生效' };
     } else {
       return { status: 'expired', text: '已过期' };
