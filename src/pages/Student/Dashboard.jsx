@@ -42,8 +42,12 @@ const StudentDashboard = () => {
   }, []);
 
   // 处理选餐跳转
-  const handleGoToMealSelect = () => {
-    navigate('/student/meal');
+  const handleGoToMealSelect = (mealId) => {
+    if (mealId) {
+      navigate(`/student/meal?mealId=${mealId}`);
+    } else {
+      navigate('/student/meal');
+    }
   };
 
   // 格式化日期显示
@@ -96,7 +100,7 @@ const StudentDashboard = () => {
                     {selectableMeal.meal_type}餐
                   </Tag>
                   <div style={{ marginTop: 8 }}>
-                    <Button type="primary" onClick={handleGoToMealSelect}>
+                    <Button type="primary" onClick={() => handleGoToMealSelect(selectableMeal.meal_id)}>
                       修改选择 <ArrowRightOutlined />
                     </Button>
                   </div>
@@ -105,7 +109,7 @@ const StudentDashboard = () => {
                 <div>
                   有餐食"{selectableMeal.name}"可供选择，请尽快完成选餐。
                   <div style={{ marginTop: 8 }}>
-                    <Button type="primary" onClick={handleGoToMealSelect}>
+                    <Button type="primary" onClick={() => handleGoToMealSelect(selectableMeal.meal_id)}>
                       立即选餐 <ArrowRightOutlined />
                     </Button>
                   </div>
@@ -127,7 +131,7 @@ const StudentDashboard = () => {
           <div>
             <div>当前没有可以选择的餐食</div>
             <div style={{ marginTop: 8 }}>
-              <Button onClick={handleGoToMealSelect}>
+              <Button onClick={() => handleGoToMealSelect()}>
                 查看所有餐食 <ArrowRightOutlined />
               </Button>
             </div>
@@ -181,7 +185,7 @@ const StudentDashboard = () => {
                         actions={[
                           <Button 
                             type="link" 
-                            onClick={handleGoToMealSelect}
+                            onClick={() => handleGoToMealSelect(meal.meal_id)}
                           >
                             查看详情
                           </Button>

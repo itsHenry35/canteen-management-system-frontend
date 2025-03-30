@@ -69,7 +69,8 @@ const StudentManage = () => {
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 100, // 一页显示100条数据
-    showSizeChanger: false, // 不显示页数切换器
+    showSizeChanger: true,
+    pageSizeOptions: ['50', '100', '1000'],
     showTotal: (total) => `共 ${total} 条数据`
   });
 

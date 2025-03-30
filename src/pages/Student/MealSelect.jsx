@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Row, Col, Button, Radio, message, Typography, Spin, Result, Divider, Empty, List, Tag, Image, Alert } from 'antd';
 import { ClockCircleOutlined, CalendarOutlined } from '@ant-design/icons';
+import { useLocation, Link } from 'react-router-dom';
 import PageLayout from '../../components/PageLayout';
 import { getStudentMealSelection, studentSelectMeal } from '../../api/meal';
 import dayjs from 'dayjs';
@@ -16,6 +17,7 @@ const MealSelect = () => {
   const [meals, setMeals] = useState([]);
   const [currentMeal, setCurrentMeal] = useState(null);
   const [selectedMeal, setSelectedMeal] = useState('');
+  const location = useLocation();
 
   // 获取菜单和选餐状态
   useEffect(() => {
@@ -23,23 +25,35 @@ const MealSelect = () => {
       try {
         setLoading(true);
         
+        // 获取URL中的mealId参数
+        const queryParams = new URLSearchParams(location.search);
+        const mealIdFromURL = queryParams.get('mealId');
+        
         // 获取学生选餐信息
         const response = await getStudentMealSelection();
         
         if (response && response.selections && response.selections.length > 0) {
           setMeals(response.selections);
           
-          // 查找第一个可选餐的餐食作为当前餐食
-          const selectableMeal = response.selections.find(meal => meal.selectable);
+          let targetMeal = null;
           
-          if (selectableMeal) {
-            setCurrentMeal(selectableMeal);
-            setSelectedMeal(selectableMeal.meal_type || '');
-          } else {
-            // 如果没有可选餐的餐食，选择第一个餐食作为当前餐食
-            setCurrentMeal(response.selections[0]);
-            setSelectedMeal(response.selections[0].meal_type || '');
+          // 先检查URL中是否有指定的餐食ID
+          if (mealIdFromURL) {
+            targetMeal = response.selections.find(meal => meal.meal_id.toString() === mealIdFromURL);
           }
+          
+          // 如果URL中没有指定餐食ID或者指定的ID不存在，则查找第一个可选餐的餐食
+          if (!targetMeal) {
+            targetMeal = response.selections.find(meal => meal.selectable);
+          }
+          
+          // 如果没有可选餐的餐食，选择第一个餐食作为当前餐食
+          if (!targetMeal) {
+            targetMeal = response.selections[0];
+          }
+          
+          setCurrentMeal(targetMeal);
+          setSelectedMeal(targetMeal.meal_type || '');
         } else {
           setMeals([]);
           setCurrentMeal(null);
@@ -55,7 +69,7 @@ const MealSelect = () => {
     };
     
     fetchData();
-  }, []);
+  }, [location.search]);
 
   // 处理选餐变更
   const handleMealChange = (e) => {
@@ -201,8 +215,14 @@ const MealSelect = () => {
     );
   };
 
+  // 自定义breadcomb元素，支持点击首页返回学生主页
+  const customBreadcrumb = [
+    <Link key="home" to="/student">首页</Link>,
+    '选餐'
+  ];
+
   return (
-    <PageLayout breadcrumb={['首页', '选餐']}>
+    <PageLayout breadcrumb={customBreadcrumb}>
       <div className="page-title">
         <Title level={4}>选餐</Title>
       </div>
