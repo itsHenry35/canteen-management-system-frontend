@@ -70,8 +70,7 @@ const StudentManage = () => {
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 100, // 一页显示100条数据
-    showSizeChanger: true,
-    pageSizeOptions: ['50', '100', '1000'],
+    showSizeChanger: false,
     showTotal: (total) => `共 ${total} 条数据`
   });
 
@@ -175,8 +174,8 @@ const fetchStudentsSelections = async (mealId) => {
     setSelectedRowKeys([]);
   };
 
-  //随机选餐功能相关
-  const randomSelectMeals = (studentIds) => {
+  // 随机选餐功能相关
+  const randomSelectMeals = async (studentIds) => {
     if (!currentMealId) {
       message.error('请先选择一个餐食');
       return Promise.reject(new Error('No meal selected'));
@@ -196,33 +195,30 @@ const fetchStudentsSelections = async (mealId) => {
       }
     });
     
-    // 创建请求数组
-    const requests = [];
-    
-    // 如果有学生选择A餐，添加A餐请求
-    if (mealAStudents.length > 0) {
-      requests.push(
-        batchSelectMeals({
+    try {
+      // 如果有学生选择A餐，先处理A餐
+      if (mealAStudents.length > 0) {
+        await batchSelectMeals({
           student_ids: mealAStudents,
           meal_id: currentMealId,
           meal_type: 'A'
-        })
-      );
-    }
-    
-    // 如果有学生选择B餐，添加B餐请求
-    if (mealBStudents.length > 0) {
-      requests.push(
-        batchSelectMeals({
+        });
+      }
+      
+      // 如果有学生选择B餐，再处理B餐
+      if (mealBStudents.length > 0) {
+        await batchSelectMeals({
           student_ids: mealBStudents,
           meal_id: currentMealId,
           meal_type: 'B'
-        })
-      );
+        });
+      }
+      
+      return true; // 成功完成
+    } catch (error) {
+      console.error('随机选餐失败:', error.data.message);
+      throw error; // 将错误向上传递
     }
-    
-    // 返回一个Promise，当所有请求完成时解析
-    return Promise.all(requests);
   };
 
   // 获取学生列表

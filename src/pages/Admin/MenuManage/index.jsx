@@ -48,8 +48,7 @@ const MenuManage = () => {
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 100,
-    showSizeChanger: true,
-    pageSizeOptions: ['50', '100', '1000'],
+    showSizeChanger: false,
     showTotal: (total) => `共 ${total} 条数据`
   });
 
