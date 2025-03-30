@@ -108,7 +108,6 @@ const fetchStudentsSelections = async (mealId) => {
       // 根据API返回的学生ID列表，更新学生的选餐状态
       const studentsWithSelections = allStudents.map(student => {
         let current_selection = '0';
-        let selection_time = null;
         
         // 检查学生ID是否在A餐列表中
         if (response.a && response.a.includes(student.id)) {
@@ -121,8 +120,7 @@ const fetchStudentsSelections = async (mealId) => {
         // 学生在未选择列表中或不在任何列表中，不用做什么
         return {
           ...student,
-          current_selection,
-          selection_time
+          current_selection
         };
       });
       
@@ -660,12 +658,6 @@ const fetchStudentsSelections = async (mealId) => {
       filterIcon: filtered => (
         <FilterOutlined style={{ color: filtered ? '#1890ff' : undefined }} />
       ),
-    },
-    {
-      title: '选餐时间',
-      dataIndex: 'selection_time',
-      key: 'selection_time',
-      render: (date) => date ? new Date(date).toLocaleString() : '-',
     },
     {
       title: '钉钉ID',
