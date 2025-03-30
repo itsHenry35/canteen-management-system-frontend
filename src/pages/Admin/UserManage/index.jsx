@@ -9,6 +9,7 @@ import {
 } from '@ant-design/icons';
 import PageLayout from '../../../components/PageLayout';
 import { getAllUsers, createUser, updateUser, deleteUser } from '../../../api/user';
+import { Link } from 'react-router-dom';
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -201,7 +202,7 @@ const UserManage = () => {
   ];
 
   return (
-    <PageLayout breadcrumb={['首页', '用户管理']}>
+    <PageLayout breadcrumb={[<Link key="home" to="/admin">首页</Link>, '用户管理']}>
       <div className="page-title">
         <Title level={4}>用户管理</Title>
       </div>

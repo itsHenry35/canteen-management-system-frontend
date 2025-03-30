@@ -215,14 +215,8 @@ const MealSelect = () => {
     );
   };
 
-  // 自定义breadcomb元素，支持点击首页返回学生主页
-  const customBreadcrumb = [
-    <Link key="home" to="/student">首页</Link>,
-    '选餐'
-  ];
-
   return (
-    <PageLayout breadcrumb={customBreadcrumb}>
+    <PageLayout breadcrumb={[<Link key="home" to="/student">首页</Link>, '选餐']}>
       <div className="page-title">
         <Title level={4}>选餐</Title>
       </div>

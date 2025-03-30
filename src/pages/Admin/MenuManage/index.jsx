@@ -22,6 +22,7 @@ import customParseFormat from 'dayjs/plugin/customParseFormat';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import isBetween from 'dayjs/plugin/isBetween';
+import { Link } from 'react-router-dom';
 
 dayjs.extend(customParseFormat);
 dayjs.extend(utc);
@@ -345,7 +346,7 @@ const MenuManage = () => {
   ];
 
   return (
-    <PageLayout breadcrumb={['首页', '餐食管理']}>
+    <PageLayout breadcrumb={[<Link key="home" to="/admin">首页</Link>, '餐食管理']}>
       <div className="page-title">
         <Title level={4}>餐食管理</Title>
       </div>

@@ -11,6 +11,7 @@ import {
 } from '@ant-design/icons';
 import PageLayout from '../../../components/PageLayout';
 import { getSettings, updateSettings, rebuildParentStudentMapping } from '../../../api/setting';
+import { Link } from 'react-router-dom';
 
 const { Title, Paragraph, Text } = Typography;
 const { confirm } = Modal;
@@ -134,7 +135,7 @@ const Settings = () => {
   }, [countdownInterval]);
 
   return (
-    <PageLayout breadcrumb={['首页', '系统设置']}>
+    <PageLayout breadcrumb={[<Link key="home" to="/admin">首页</Link>, '系统设置']}>
       <div className="page-title">
         <Title level={4}>系统设置</Title>
       </div>

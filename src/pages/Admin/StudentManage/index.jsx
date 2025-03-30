@@ -20,6 +20,7 @@ import BatchQrcodePrint from './BatchQrcodePrint';
 import TextArea from 'antd/lib/input/TextArea';
 import { batchSelectMeals, getAllMeals, getMealSelections } from '../../../api/meal';
 import { createStudent, deleteStudent, getAllStudents, getStudentQRCodeData, updateStudent } from '../../../api/student';
+import { Link } from 'react-router-dom';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -787,7 +788,7 @@ const fetchStudentsSelections = async (mealId) => {
   };
 
   return (
-    <PageLayout breadcrumb={['首页', '学生管理']}>
+    <PageLayout breadcrumb={[<Link key="home" to="/admin">首页</Link>, '学生管理']}>
       <div className="page-title">
         <Title level={4}>学生管理</Title>
       </div>
