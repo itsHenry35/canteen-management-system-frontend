@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Row, Col, Card, Statistic, Typography, Spin, Select, Empty,
-  Table} from 'antd';
+  Table, Grid } from 'antd';
 import { 
   TeamOutlined, 
   CheckCircleOutlined,
@@ -12,11 +12,13 @@ import moment from 'moment';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
+const { useBreakpoint } = Grid;
 
 const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [mealStats, setMealStats] = useState([]);
   const [selectedMeal, setSelectedMeal] = useState(null);
+  const screens = useBreakpoint();
 
   // 获取统计数据
   useEffect(() => {
@@ -64,6 +66,17 @@ const AdminDashboard = () => {
   // 格式化日期显示
   const formatDate = (dateString) => {
     return moment(dateString).format('YYYY-MM-DD HH:mm');
+  };
+
+  // 根据屏幕宽度确定Col的span
+  const getColSpan = () => {
+    if (screens.xs) {
+      return 24; // 极小屏幕，一列一个卡片
+    } else if (screens.sm) {
+      return 12; // 小屏幕，一行两个卡片
+    } else {
+      return 6; // 中等及以上屏幕，一行四个卡片
+    }
   };
 
   const columns = [
@@ -115,18 +128,22 @@ const AdminDashboard = () => {
       <Spin spinning={loading}>
         {mealStats.length > 0 ? (
           <>
-            <Card title="餐食选餐统计概览" style={{ marginBottom: 16 }}>
-              <Table 
-                dataSource={mealStats} 
-                columns={columns} 
-                rowKey="meal_id"
-                pagination={false}
-              />
-            </Card>
+            <div style={{ overflowX: 'auto' }}>
+              <div style={{ minWidth: '1000px' }}>
+                <Card title="餐食选餐统计概览" style={{ marginBottom: 16 }}>
+                  <Table 
+                    dataSource={mealStats} 
+                    columns={columns} 
+                    rowKey="meal_id"
+                    pagination={false}
+                  />
+                </Card>
+              </div>
+            </div>
 
             <div style={{ marginBottom: 16 }}>
               <Select
-                style={{ width: 300 }}
+                style={{ width: '100%', maxWidth: 300 }}
                 placeholder="选择查看详细统计的餐食"
                 onChange={handleMealChange}
                 value={selectedMeal}
@@ -140,8 +157,8 @@ const AdminDashboard = () => {
             </div>
 
             {currentMealData && (
-              <Row gutter={16}>
-                <Col span={6}>
+              <Row gutter={[16, 16]}>
+                <Col span={getColSpan()}>
                   <Card>
                     <Statistic
                       title="总学生数"
@@ -150,7 +167,7 @@ const AdminDashboard = () => {
                     />
                   </Card>
                 </Col>
-                <Col span={6}>
+                <Col span={getColSpan()}>
                   <Card>
                     <Statistic
                       title="A餐人数"
@@ -159,7 +176,7 @@ const AdminDashboard = () => {
                     />
                   </Card>
                 </Col>
-                <Col span={6}>
+                <Col span={getColSpan()}>
                   <Card>
                     <Statistic
                       title="B餐人数"
@@ -168,7 +185,7 @@ const AdminDashboard = () => {
                     />
                   </Card>
                 </Col>
-                <Col span={6}>
+                <Col span={getColSpan()}>
                   <Card>
                     <Statistic
                       title="未选餐人数"

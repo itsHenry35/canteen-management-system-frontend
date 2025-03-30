@@ -72,7 +72,7 @@ export const batchSelectMeals = (data) => {
 // 手动提醒未选餐学生
 export const notifyUnselectedStudents = (meal_id) => {
   return request({
-    url: '/api/admin/notify/unselected',
+    url: '/admin/notify/unselected',
     method: 'post',
     data: { meal_id }
   });

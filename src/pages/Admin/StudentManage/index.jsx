@@ -65,6 +65,14 @@ const StudentManage = () => {
   const [printLoading, setPrintLoading] = useState(false);
   const printComponentRef = useRef();
 
+  // 分页相关设置
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 100, // 一页显示100条数据
+    showSizeChanger: false, // 不显示页数切换器
+    showTotal: (total) => `共 ${total} 条数据`
+  });
+
   // 获取所有餐食
   const fetchMeals = async () => {
     try {
@@ -438,6 +446,10 @@ const fetchStudentsSelections = async (mealId) => {
   // 处理表格筛选变化
   const handleChange = (pagination, filters) => {
     setFilteredInfo(filters);
+    setPagination(prevPagination => ({
+      ...prevPagination,
+      current: pagination.current
+    }));
   };
 
   // 获取唯一的班级名称列表用于筛选
@@ -780,105 +792,112 @@ const fetchStudentsSelections = async (mealId) => {
       </div>
       
       <Card>
-        <div className="meal-selection" style={{ marginBottom: 16 }}>
-          <Row gutter={16} align="middle">
-            <Col span={6}>
-              <Text strong>选择查看餐食:</Text>
-            </Col>
-            <Col span={18}>
-              <Select
-                style={{ width: '100%' }}
-                placeholder="请选择要查看的餐食"
-                value={currentMealId}
-                onChange={handleMealChange}
-                loading={loadingMeals}
-              >
-                {meals.map(meal => (
-                  <Option key={meal.id} value={meal.id}>
-                    {meal.name} ({new Date(meal.effective_start_date).toLocaleDateString()})
-                  </Option>
-                ))}
-              </Select>
-            </Col>
-          </Row>
-        </div>
-        
-        {getCurrentMealInfo()}
-        
-        <div className="operation-area" style={{ marginBottom: 16 }}>
-          <Row justify="space-between" align="middle">
-            <Col>
-              <Space>
-                <Button 
-                  type="primary" 
-                  icon={<PlusOutlined />} 
-                  onClick={showAddModal}
-                >
-                  添加学生
-                </Button>
-                <Button 
-                  type="primary"
-                  icon={<ImportOutlined />}
-                  onClick={showBatchImportModal}
-                >
-                  批量导入
-                </Button>
-                <Button icon={<ReloadOutlined />} onClick={clearAllFilters}>
-                  清除筛选
-                </Button>
-              </Space>
-            </Col>
-            <Col>
-              <Space>
-                <Button 
-                  type="primary"
-                  disabled={selectedRowKeys.length === 0 || !currentMealId} 
-                  onClick={showBatchSelectModal}
-                >
-                  批量选餐
-                </Button>
-                <Button 
-                  type="primary"
-                  icon={<QrcodeOutlined />}
-                  disabled={selectedRowKeys.length === 0}
-                  onClick={handleBatchQrcode}
-                  loading={printLoading}
-                >
-                  批量生成二维码
-                </Button>
-                <Popconfirm
-                  title={`确定要删除选中的 ${selectedRowKeys.length} 名学生吗？`}
-                  onConfirm={handleBatchDelete}
-                  okText="是"
-                  cancelText="否"
-                  disabled={selectedRowKeys.length === 0}
-                >
-                  <Button 
-                    danger
-                    icon={<DeleteOutlined />}
-                    disabled={selectedRowKeys.length === 0}
+        <div style={{ overflowX: 'auto' }}>
+          <div style={{ minWidth: '1000px' }}>
+            <div className="meal-selection" style={{ marginBottom: 16 }}>
+              <Row gutter={16} align="middle">
+                <Col span={6}>
+                  <Text strong>选择查看餐食:</Text>
+                </Col>
+                <Col span={18}>
+                  <Select
+                    style={{ width: '100%' }}
+                    placeholder="请选择要查看的餐食"
+                    value={currentMealId}
+                    onChange={handleMealChange}
+                    loading={loadingMeals}
                   >
-                    批量删除
-                  </Button>
-                </Popconfirm>
-              </Space>
-            </Col>
-          </Row>
+                    {meals.map(meal => (
+                      <Option key={meal.id} value={meal.id}>
+                        {meal.name} ({new Date(meal.effective_start_date).toLocaleDateString()})
+                      </Option>
+                    ))}
+                  </Select>
+                </Col>
+              </Row>
+            </div>
+            
+            {getCurrentMealInfo()}
+            
+            <div className="operation-area" style={{ marginBottom: 16 }}>
+              <Row justify="space-between" align="middle">
+                <Col>
+                  <Space>
+                    <Button 
+                      type="primary" 
+                      icon={<PlusOutlined />} 
+                      onClick={showAddModal}
+                    >
+                      添加学生
+                    </Button>
+                    <Button 
+                      type="primary"
+                      icon={<ImportOutlined />}
+                      onClick={showBatchImportModal}
+                    >
+                      批量导入
+                    </Button>
+                    <Button icon={<ReloadOutlined />} onClick={clearAllFilters}>
+                      清除筛选
+                    </Button>
+                  </Space>
+                </Col>
+                <Col>
+                  <Space>
+                    <Button 
+                      type="primary"
+                      disabled={selectedRowKeys.length === 0 || !currentMealId} 
+                      onClick={showBatchSelectModal}
+                    >
+                      批量选餐
+                    </Button>
+                    <Button 
+                      type="primary"
+                      icon={<QrcodeOutlined />}
+                      disabled={selectedRowKeys.length === 0}
+                      onClick={handleBatchQrcode}
+                      loading={printLoading}
+                    >
+                      批量生成二维码
+                    </Button>
+                    <Popconfirm
+                      title={`确定要删除选中的 ${selectedRowKeys.length} 名学生吗？`}
+                      onConfirm={handleBatchDelete}
+                      okText="是"
+                      cancelText="否"
+                      disabled={selectedRowKeys.length === 0}
+                    >
+                      <Button 
+                        danger
+                        icon={<DeleteOutlined />}
+                        disabled={selectedRowKeys.length === 0}
+                      >
+                        批量删除
+                      </Button>
+                    </Popconfirm>
+                  </Space>
+                </Col>
+              </Row>
+            </div>
+            
+            {getSelectionSummary()}
+          </div>
         </div>
         
-        {getSelectionSummary()}
-        
-        <Spin spinning={loadingSelections}>
-          <Table
-            rowKey="id"
-            rowSelection={rowSelection}
-            columns={columns}
-            dataSource={students}
-            loading={loading}
-            onChange={handleChange}
-            pagination={false}
-          />
-        </Spin>
+        <div style={{ overflowX: 'auto' }}>
+          <Spin spinning={loadingSelections}>
+            <Table
+              rowKey="id"
+              rowSelection={rowSelection}
+              columns={columns}
+              dataSource={students}
+              loading={loading}
+              onChange={handleChange}
+              pagination={pagination}
+              scroll={{ x: 1000 }}
+            />
+          </Spin>
+        </div>
       </Card>
       
       {/* 添加/编辑学生对话框 */}

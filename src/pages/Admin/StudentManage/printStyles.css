@@ -119,11 +119,13 @@
     /* 分页控制 */
     .qrcode-row {
       page-break-inside: avoid;
+      display: flex;
+      justify-content: flex-start;
     }
     
     /* 确保清晰打印 */
     * {
       -webkit-print-color-adjust: exact !important;
-      color-adjust: exact !important;
+      print-color-adjust: exact !important;
     }
   }

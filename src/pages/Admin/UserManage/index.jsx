@@ -21,6 +21,12 @@ const UserManage = () => {
   const [currentUser, setCurrentUser] = useState(null);
   const [form] = Form.useForm();
   const [userType, setUserType] = useState('');
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 100,
+    showSizeChanger: false,
+    showTotal: (total) => `共 ${total} 条数据`
+  });
 
   // 获取用户列表
   const fetchUsers = async () => {
@@ -103,6 +109,14 @@ const UserManage = () => {
   // 用户类型筛选变化
   const handleUserTypeChange = (value) => {
     setUserType(value);
+  };
+
+  // 处理分页变化
+  const handleTableChange = (pagination) => {
+    setPagination(prevPagination => ({
+      ...prevPagination,
+      current: pagination.current
+    }));
   };
 
   const columns = [
@@ -192,35 +206,43 @@ const UserManage = () => {
       </div>
       
       <Card>
-        <div className="operation-area">
-          <Space>
-            <Button 
-              type="primary" 
-              icon={<PlusOutlined />} 
-              onClick={showAddModal}
-            >
-              添加用户
-            </Button>
-            <Select
-              placeholder="选择用户类型"
-              style={{ width: 150 }}
-              allowClear
-              onChange={handleUserTypeChange}
-            >
-              <Option value="admin">管理员</Option>
-              <Option value="canteen_a">食堂A餐工作人员</Option>
-              <Option value="canteen_b">食堂B餐工作人员</Option>
-            </Select>
-          </Space>
+        <div style={{ overflowX: 'auto' }}>
+          <div style={{ minWidth: '1000px' }}>
+            <div className="operation-area" style={{ marginBottom: 16 }}>
+              <Space>
+                <Button 
+                  type="primary" 
+                  icon={<PlusOutlined />} 
+                  onClick={showAddModal}
+                >
+                  添加用户
+                </Button>
+                <Select
+                  placeholder="选择用户类型"
+                  style={{ width: 150 }}
+                  allowClear
+                  onChange={handleUserTypeChange}
+                >
+                  <Option value="admin">管理员</Option>
+                  <Option value="canteen_a">食堂A餐工作人员</Option>
+                  <Option value="canteen_b">食堂B餐工作人员</Option>
+                </Select>
+              </Space>
+            </div>
+          </div>
         </div>
         
-        <Table
-          rowKey="id"
-          columns={columns}
-          dataSource={users}
-          loading={loading}
-          pagination={{ pageSize: 10 }}
-        />
+        <div style={{ overflowX: 'auto' }}>
+          <Table
+            rowKey="id"
+            columns={columns}
+            dataSource={users}
+            loading={loading}
+            pagination={pagination}
+            onChange={handleTableChange}
+            scroll={{ x: 1000 }}
+          />
+        </div>
       </Card>
       
       <Modal

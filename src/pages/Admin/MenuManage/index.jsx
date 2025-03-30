@@ -44,6 +44,12 @@ const MenuManage = () => {
   const [notifyModalVisible, setNotifyModalVisible] = useState(false);
   const [notifyingMeal, setNotifyingMeal] = useState(null);
   const [notifying, setNotifying] = useState(false);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 100,
+    showSizeChanger: false,
+    showTotal: (total) => `共 ${total} 条数据`
+  });
 
   const fetchMeals = async () => {
     try {
@@ -111,6 +117,13 @@ const MenuManage = () => {
       effective_time: [dayjs(record.effective_start_date), dayjs(record.effective_end_date)]
     });
     setModalVisible(true);
+  };
+
+  const handleTableChange = (pagination) => {
+    setPagination(prevPagination => ({
+      ...prevPagination,
+      current: pagination.current
+    }));
   };
 
   const handleSubmit = async () => {
@@ -337,21 +350,31 @@ const MenuManage = () => {
       </div>
 
       <Spin spinning={loading}>
-        <Card title="餐食列表" extra={
-          <Button 
-            type="primary" 
-            icon={<PlusOutlined />} 
-            onClick={showAddModal}
-          >
-            添加餐食
-          </Button>
-        }>
-          <Table 
-            columns={columns} 
-            dataSource={meals}
-            rowKey="id"
-            pagination={false}
-          />
+        <Card>
+          <div style={{ overflowX: 'auto' }}>
+            <div style={{ minWidth: '1000px', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                <Button 
+                  type="primary" 
+                  icon={<PlusOutlined />} 
+                  onClick={showAddModal}
+                >
+                  添加餐食
+                </Button>
+              </div>
+            </div>
+          </div>
+          
+          <div style={{ overflowX: 'auto' }}>
+            <Table 
+              columns={columns} 
+              dataSource={meals}
+              rowKey="id"
+              pagination={pagination}
+              onChange={handleTableChange}
+              scroll={{ x: 1200 }}
+            />
+          </div>
         </Card>
 
         <Modal
