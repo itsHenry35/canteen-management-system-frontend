@@ -23,9 +23,6 @@ const AuthRoute = ({ children, role }) => {
       return <Navigate to="/admin" replace />;
     } else if (userRole === 'student') {
       return <Navigate to="/student" replace />;
-    } else if (userRole === 'canteen') {
-      // 食堂阿姨使用安卓客户端，理论上不会进入网页版
-      return <Navigate to="/login" replace />;
     }
   }
 

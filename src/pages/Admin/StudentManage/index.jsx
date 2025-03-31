@@ -11,7 +11,8 @@ import {
   QrcodeOutlined, ReloadOutlined, FilterOutlined,
   CheckCircleOutlined, ExclamationCircleOutlined,
   PrinterOutlined, MenuOutlined,
-  DashOutlined, ImportOutlined
+  DashOutlined, ImportOutlined,
+  FileExcelOutlined
 } from '@ant-design/icons';
 import { QRCodeCanvas as QRCode } from 'qrcode.react';
 import { useReactToPrint } from 'react-to-print';
@@ -21,6 +22,7 @@ import TextArea from 'antd/lib/input/TextArea';
 import { batchSelectMeals, getAllMeals, getMealSelections } from '../../../api/meal';
 import { createStudent, deleteStudent, getAllStudents, getStudentQRCodeData, updateStudent } from '../../../api/student';
 import { Link } from 'react-router-dom';
+import * as XLSX from 'xlsx';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -309,6 +311,187 @@ const fetchStudentsSelections = async (mealId) => {
       message.error('批量导入失败');
     } finally {
       setBatchImportLoading(false);
+    }
+  };
+
+  // 导出Excel功能
+  const exportToExcel = () => {
+    try {
+      message.loading({ content: '正在生成Excel文件...', key: 'exporting' });
+
+      // 获取当前选中的餐食信息（如果有）
+      let mealName = "学生名单";
+      let mealInfo = null;
+      if (currentMealId) {
+        const meal = meals.find(m => m.id === currentMealId);
+        if (meal) {
+          mealName = meal.name;
+          mealInfo = meal;
+        }
+      }
+
+      // 按班级分组学生
+      const classesList = {};
+      students.forEach(student => {
+        if (!classesList[student.class]) {
+          classesList[student.class] = [];
+        }
+        classesList[student.class].push(student);
+      });
+
+      // 创建工作簿
+      const workbook = XLSX.utils.book_new();
+      
+      // 获取当前时间，用于显示导出时间
+      const now = new Date();
+      const exportTime = now.toLocaleString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+      });
+      
+      // 格式化用于文件名的时间
+      const fileNameTime = exportTime.replace(/[/:]/g, '-');
+      
+      // 创建总表数据
+      if (Object.keys(classesList).length > 0) {
+        const summaryRows = [];
+        
+        // 总表标题行
+        summaryRows.push([`${mealName} - 全校餐食选择统计`]);
+        summaryRows.push([`导出时间: ${exportTime}`]);
+        summaryRows.push([]);  // 空行
+        
+        // 总表表头
+        summaryRows.push(['班级', 'A餐人数', 'B餐人数', '未选择人数', '总人数']);
+        
+        // 各班级统计数据
+        let totalStudents = 0;
+        let totalA = 0;
+        let totalB = 0;
+        let totalUnselected = 0;
+        
+        Object.keys(classesList).forEach(className => {
+          const classStudents = classesList[className];
+          let aCount = 0;
+          let bCount = 0;
+          let unselectedCount = 0;
+          
+          if (currentMealId) {
+            aCount = classStudents.filter(s => s.current_selection === 'A').length;
+            bCount = classStudents.filter(s => s.current_selection === 'B').length;
+            unselectedCount = classStudents.filter(s => s.current_selection === '0').length;
+          }
+          
+          // 添加到总计
+          totalStudents += classStudents.length;
+          totalA += aCount;
+          totalB += bCount;
+          totalUnselected += unselectedCount;
+          
+          // 添加班级统计行
+          summaryRows.push([
+            className,
+            aCount,
+            bCount,
+            unselectedCount,
+            classStudents.length
+          ]);
+        });
+        
+        // 添加总计行
+        summaryRows.push([]);  // 空行
+        summaryRows.push([
+          '总计',
+          totalA,
+          totalB,
+          totalUnselected,
+          totalStudents
+        ]);
+        
+        // 创建总表工作表
+        const summaryWorksheet = XLSX.utils.aoa_to_sheet(summaryRows);
+        
+        // 将总表添加为第一个工作表
+        XLSX.utils.book_append_sheet(workbook, summaryWorksheet, '总表');
+      }
+
+      // 为每个班级创建一个工作表
+      Object.keys(classesList).forEach(className => {
+        const classStudents = classesList[className];
+        
+        // 计算该班级的A餐和B餐人数
+        let aCount = 0;
+        let bCount = 0;
+        let unselectedCount = 0;
+        
+        if (currentMealId) {
+          aCount = classStudents.filter(s => s.current_selection === 'A').length;
+          bCount = classStudents.filter(s => s.current_selection === 'B').length;
+          unselectedCount = classStudents.filter(s => s.current_selection === '0').length;
+        }
+        
+        // 创建表头和餐食信息
+        const headerRows = [];
+        
+        // 添加餐食信息和统计数据（竖排）
+        if (mealInfo) {
+          headerRows.push([`餐食名称: ${mealName}`]);
+          headerRows.push([`班级: ${className}`]);
+          headerRows.push([`A餐人数: ${aCount}`]);
+          headerRows.push([`B餐人数: ${bCount}`]);
+          headerRows.push([`未选择人数: ${unselectedCount}`]);
+          headerRows.push([`总人数: ${classStudents.length}`]);
+          headerRows.push([`导出时间: ${exportTime}`]);
+          headerRows.push([]); // 空行分隔
+        } else {
+          headerRows.push([`班级: ${className}`]);
+          headerRows.push([`总人数: ${classStudents.length}`]);
+          headerRows.push([`导出时间: ${exportTime}`]);
+          headerRows.push([]); // 空行分隔
+        }
+        
+        // 添加数据表头
+        headerRows.push(['ID', '姓名', '班级', '餐食选择', '钉钉ID']);
+        
+        // 处理每个学生的数据
+        const studentRows = classStudents.map(student => [
+          student.id,
+          student.full_name,
+          student.class,
+          // 如果未选中餐食或者学生没有选餐数据，显示为"未知"
+          currentMealId ? 
+            (student.current_selection === 'A' ? 'A餐' : 
+            student.current_selection === 'B' ? 'B餐' : 
+            student.current_selection === '0' ? '未选择' : '未知') 
+            : '未知',
+          student.dingtalk_id || ''
+        ]);
+        
+        // 合并所有行
+        const data = [...headerRows, ...studentRows];
+        
+        // 创建工作表
+        const worksheet = XLSX.utils.aoa_to_sheet(data);
+        
+        // 将工作表添加到工作簿，使用班级名作为表格名称
+        XLSX.utils.book_append_sheet(workbook, worksheet, className);
+      });
+
+      // 生成文件名：餐食名称_导出时间.xlsx
+      const fileName = `${mealName}_${fileNameTime}.xlsx`;
+
+      // 导出文件
+      XLSX.writeFile(workbook, fileName);
+      
+      message.success({ content: 'Excel文件已生成', key: 'exporting' });
+    } catch (error) {
+      console.error('导出Excel失败:', error);
+      message.error({ content: '导出Excel失败', key: 'exporting' });
     }
   };
 
@@ -865,6 +1048,13 @@ const fetchStudentsSelections = async (mealId) => {
                         批量删除
                       </Button>
                     </Popconfirm>
+                    <Button
+                      type="primary"
+                      icon={<FileExcelOutlined />}
+                      onClick={exportToExcel}
+                    >
+                      导出Excel
+                    </Button>
                   </Space>
                 </Col>
               </Row>

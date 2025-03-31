@@ -158,6 +158,10 @@ const UserManage = () => {
           color = 'purple';
           icon = <ShopOutlined />;
           label = '食堂B餐工作人员';
+        } else if (text == 'canteen_test') {
+          color = 'red';
+          icon = <ShopOutlined />;
+          label = '食堂测试人员';
         }
         
         return (
@@ -296,6 +300,7 @@ const UserManage = () => {
               <Option value="admin">管理员</Option>
               <Option value="canteen_a">食堂A餐工作人员</Option>
               <Option value="canteen_b">食堂B餐工作人员</Option>
+              <Option value="canteen_test">食堂测试人员</Option>
             </Select>
           </Form.Item>
           <Form.Item
