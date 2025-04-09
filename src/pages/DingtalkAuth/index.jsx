@@ -4,7 +4,8 @@ import { Spin, Result, Button, Card, List, Avatar } from 'antd';
 import { LoadingOutlined, UserOutlined } from '@ant-design/icons';
 import { dingTalkLogin } from '../../api/auth';
 import { isLoggedIn, getUserRole, setToken, setUser } from '../../utils/auth';
-import request from '../../utils/request';
+import { useWebsite } from '../../contexts/WebsiteContext';
+import Footer from '../../components/Footer';
 import styles from './index.module.css';
 import * as dd from 'dingtalk-jsapi';
 
@@ -14,11 +15,19 @@ const DingtalkAuth = () => {
   const [error, setError] = useState(null);
   const [students, setStudents] = useState([]);
   const [showStudentSelect, setShowStudentSelect] = useState(false);
+  const { dingtalk_corp_id, name } = useWebsite();
 
   useEffect(() => {
     // 如果已登录，重定向到对应页面
     if (isLoggedIn()) {
       redirectToUserHomepage();
+      return;
+    }
+
+    // 检查是否配置了钉钉企业ID
+    if (!dingtalk_corp_id) {
+      setError('未配置钉钉登录');
+      setLoading(false);
       return;
     }
 
@@ -34,16 +43,10 @@ const DingtalkAuth = () => {
             return;
           }
 
-          // 先请求获取企业的CorpID
-          const corpId = await fetchCorpId();
-          if (!corpId) {
-            throw new Error('获取企业ID失败');
-          }
-
           // 钉钉免登
           dd.ready(() => {
             dd.runtime.permission.requestAuthCode({
-              corpId: corpId, // 使用从接口获取的corpId
+              corpId: dingtalk_corp_id,
               onSuccess: async (result) => {
                 try {
                   // 获取到免登授权码后，调用登录接口
@@ -86,29 +89,7 @@ const DingtalkAuth = () => {
     };
 
     getAuthCode();
-  }, [navigate]);
-
-  // 从接口获取企业ID
-  const fetchCorpId = async () => {
-    try {
-      // 直接调用API获取企业ID
-      const corpId_data = await request.get('/dingtalk_corpid');
-      const corpId = corpId_data.corp_id;
-      return corpId;
-    } catch (error) {
-      console.error('Failed to fetch CorpID:', error);
-      // 检查是否有具体的错误消息
-      if (error.data && error.data.message) {
-        setError(error.data.message);
-      } else if (error.response?.data?.message) {
-        setError(error.response.data.message);
-      } else {
-        setError('获取企业ID失败');
-      }
-      setLoading(false);
-      return null;
-    }
-  };
+  }, [navigate, dingtalk_corp_id]);
 
   // 处理登录请求
   const handleLogin = async (code) => {
@@ -227,6 +208,9 @@ const DingtalkAuth = () => {
           ]}
         />
       ) : null}
+      <div style={{ position: 'fixed', bottom: 0, width: '100%' }}>
+        <Footer />
+      </div>
     </div>
   );
 };

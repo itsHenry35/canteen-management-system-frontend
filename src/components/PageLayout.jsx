@@ -8,6 +8,8 @@ import {
   HomeOutlined, BookOutlined
 } from '@ant-design/icons';
 import { removeToken, getUser } from '../utils/auth';
+import Footer from './Footer';
+import { useWebsite } from '../contexts/WebsiteContext';
 
 const { Header, Content, Sider } = Layout;
 
@@ -18,6 +20,7 @@ const PageLayout = ({ children, breadcrumb = [] }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const user = getUser();
+  const { name } = useWebsite();
 
   // 监听窗口大小变化
   useEffect(() => {
@@ -140,7 +143,7 @@ const PageLayout = ({ children, breadcrumb = [] }) => {
             />
           )}
           <div className="logo" style={{ color: 'white', fontSize: '18px', fontWeight: 'bold' }}>
-            饭卡管理系统
+            {name}
           </div>
         </div>
         <Dropdown overlay={userMenu}>
@@ -179,7 +182,9 @@ const PageLayout = ({ children, breadcrumb = [] }) => {
         )}
         <Layout style={{ 
           padding: isMobile ? '0 10px 10px' : '0 24px 24px',
-          marginLeft: isMobile ? 0 : undefined 
+          marginLeft: isMobile ? 0 : undefined,
+          display: 'flex',
+          flexDirection: 'column'
         }}>
           <Breadcrumb style={{ margin: '16px 0' }}>
             {breadcrumb.map((item, index) => (
@@ -194,10 +199,12 @@ const PageLayout = ({ children, breadcrumb = [] }) => {
               minHeight: 280,
               background: '#fff',
               borderRadius: 4,
+              flex: '1 0 auto'
             }}
           >
             {children}
           </Content>
+          <Footer />
         </Layout>
       </Layout>
     </Layout>

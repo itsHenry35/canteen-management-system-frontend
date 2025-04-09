@@ -4,6 +4,8 @@ import { UserOutlined, LockOutlined, DingdingOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom';
 import { login } from '../../api/auth';
 import { isLoggedIn, getUserRole } from '../../utils/auth';
+import { useWebsite } from '../../contexts/WebsiteContext';
+import Footer from '../../components/Footer';
 import styles from './index.module.css';
 
 const { Title, Text } = Typography;
@@ -12,6 +14,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const navigate = useNavigate();
+  const { name, dingtalk_corp_id } = useWebsite();
 
   // 如果已登录，重定向到对应页面
   useEffect(() => {
@@ -68,7 +71,7 @@ const Login = () => {
     <div className={styles.container}>
       <Card className={styles.loginCard}>
         <div className={styles.logo}>
-          <Title level={2}>饭卡管理系统</Title>
+          <Title level={2}>{name}</Title>
         </div>
         <Divider />
         
@@ -120,23 +123,30 @@ const Login = () => {
           </Form.Item>
         </Form>
         
-        <Divider>
-          <Text type="secondary">其他登录方式</Text>
-        </Divider>
-        
-        <div className={styles.otherLogin}>
-          <Button 
-            icon={<DingdingOutlined />} 
-            size="large"
-            type="default"
-            onClick={handleDingTalkLogin}
-            block
-            className={styles.dingTalkButton}
-          >
-            钉钉登录
-          </Button>
-        </div>
+        {dingtalk_corp_id && (
+          <>
+            <Divider>
+              <Text type="secondary">其他登录方式</Text>
+            </Divider>
+            
+            <div className={styles.otherLogin}>
+              <Button 
+                icon={<DingdingOutlined />} 
+                size="large"
+                type="default"
+                onClick={handleDingTalkLogin}
+                block
+                className={styles.dingTalkButton}
+              >
+                钉钉登录
+              </Button>
+            </div>
+          </>
+        )}
       </Card>
+      <div style={{ position: 'fixed', bottom: 0, width: '100%' }}>
+        <Footer />
+      </div>
     </div>
   );
 };

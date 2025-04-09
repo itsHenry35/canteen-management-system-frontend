@@ -2,25 +2,46 @@ import React, { useState, useEffect } from 'react';
 import { 
   Card, Form, Input, Button, message, Typography, 
   Spin, Divider, Modal, Progress,
-  Space
+  Space, Tabs
 } from 'antd';
 import {
   SettingOutlined,
   SyncOutlined,
-  ExclamationCircleOutlined
+  ExclamationCircleOutlined,
+  GlobalOutlined,
+  DingdingOutlined
 } from '@ant-design/icons';
 import PageLayout from '../../../components/PageLayout';
 import { getSettings, updateSettings, rebuildParentStudentMapping } from '../../../api/setting';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 
 const { Title, Paragraph, Text } = Typography;
+const { TabPane } = Tabs;
 const { confirm } = Modal;
 
 const Settings = () => {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [settings, setSettings] = useState(null);
-  const [form] = Form.useForm();
+  const [settings, setSettings] = useState({
+    website: {
+      name: '',
+      icp_beian: '',
+      public_sec_beian: '',
+      domain: ''
+    },
+    dingtalk: {
+      app_key: '',
+      app_secret: '',
+      agent_id: '',
+      corp_id: ''
+    }
+  });
+  const [websiteForm] = Form.useForm();
+  const [dingtalkForm] = Form.useForm();
+  const [searchParams, setSearchParams] = useSearchParams();
+  
+  // 当前激活的标签页
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'website');
   
   // 重建映射相关状态
   const [rebuildModalVisible, setRebuildModalVisible] = useState(false);
@@ -33,16 +54,17 @@ const Settings = () => {
     try {
       setLoading(true);
       const data = await getSettings();
+      
       setSettings(data);
       
-      // 设置表单初始值
-      form.setFieldsValue({
-        dingtalk: {
-          app_key: data.dingtalk?.app_key || '',
-          app_secret: data.dingtalk?.app_secret || '',
-          agent_id: data.dingtalk?.agent_id || '',
-          corp_id: data.dingtalk?.corp_id || ''
-        }
+      // 设置网站配置表单初始值
+      websiteForm.setFieldsValue({
+        website: data.website
+      });
+      
+      // 设置钉钉配置表单初始值
+      dingtalkForm.setFieldsValue({
+        dingtalk: data.dingtalk
       });
     } catch (error) {
       console.error('Failed to fetch settings:', error);
@@ -57,16 +79,63 @@ const Settings = () => {
     fetchSettings();
   }, []);
 
-  // 提交表单
-  const handleSubmit = async (values) => {
+  // 处理标签页切换
+  const handleTabChange = (key) => {
+    setActiveTab(key);
+    setSearchParams({ tab: key });
+  };
+
+  // 提交网站配置表单
+  const handleWebsiteSubmit = async (values) => {
     try {
       setSubmitting(true);
-      await updateSettings(values);
-      message.success('系统设置更新成功');
-      fetchSettings();
+      
+      // 合并当前修改的网站配置和现有的钉钉配置
+      const updatedSettings = {
+        website: values.website,
+        dingtalk: settings.dingtalk
+      };
+      
+      // 提交完整的配置
+      await updateSettings(updatedSettings);
+      message.success('网站设置更新成功');
+      
+      // 更新本地存储的配置
+      setSettings(prev => ({
+        ...prev,
+        website: values.website
+      }));
     } catch (error) {
       console.error('Failed to update settings:', error);
-      message.error('更新系统设置失败');
+      message.error('更新网站设置失败');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // 提交钉钉配置表单
+  const handleDingtalkSubmit = async (values) => {
+    try {
+      setSubmitting(true);
+      
+      // 合并当前修改的钉钉配置和现有的网站配置
+      const updatedSettings = {
+        website: settings.website,
+        dingtalk: values.dingtalk
+      };
+      
+      // 提交完整的配置
+      await updateSettings(updatedSettings);
+      message.success('钉钉设置更新成功');
+      
+      // 更新本地存储的配置
+      setSettings(prev => ({
+        ...prev,
+        dingtalk: values.dingtalk
+      }));
+    } catch (error) {
+      console.error('Failed to update settings:', error);
+      message.error('更新钉钉设置失败');
     } finally {
       setSubmitting(false);
     }
@@ -141,91 +210,179 @@ const Settings = () => {
       </div>
       
       <Spin spinning={loading}>
-        <Form
-          form={form}
-          onFinish={handleSubmit}
-          layout="vertical"
-          initialValues={settings}
-        >
-          <Card>
-            <Paragraph>
-              配置钉钉应用信息，用于学生通过钉钉登录和接收提醒。
-            </Paragraph>
-            
-            <Form.Item
-              name={['dingtalk', 'app_key']}
-              label="应用AppKey"
+        <Card>
+          <Tabs 
+            activeKey={activeTab} 
+            onChange={handleTabChange}
+            tabPosition="top"
+            type="card"
+          >
+            {/* 网站配置标签页 */}
+            <TabPane 
+              tab={
+                <span>
+                  <GlobalOutlined />
+                  网站配置
+                </span>
+              } 
+              key="website"
             >
-              <Input placeholder="请输入钉钉应用的AppKey" />
-            </Form.Item>
-            
-            <Form.Item
-              name={['dingtalk', 'app_secret']}
-              label="应用AppSecret"
-            >
-              <Input.Password placeholder="请输入钉钉应用的AppSecret" />
-            </Form.Item>
-            
-            <Form.Item
-              name={['dingtalk', 'agent_id']}
-              label="应用AgentID"
-            >
-              <Input placeholder="请输入钉钉应用的AgentID" />
-            </Form.Item>
-            
-            <Form.Item
-              name={['dingtalk', 'corp_id']}
-              label="企业CorpID"
-            >
-              <Input placeholder="请输入钉钉企业的CorpID" />
-            </Form.Item>
-            
-            <Divider />
-            
-            <Title level={5} style={{ color: '#cf1322' }}>高级操作</Title>
-            <Card 
-              type="inner" 
-              style={{ borderColor: '#ffccc7', backgroundColor: '#fff2f0', marginBottom: 16 }}
-            >
-              <Space direction="vertical" style={{ width: '100%' }}>
-                <Space align="start">
-                  <ExclamationCircleOutlined style={{ color: '#cf1322', fontSize: 16 }} />
-                  <div>
-                    <Text strong style={{ color: '#cf1322' }}>重建家长-学生映射关系</Text>
-                    <Paragraph style={{ marginTop: 8 }}>
-                      此操作会从钉钉获取所有班级信息和家长-学生关系，并将其存储在系统数据库中。
-                      <Text strong style={{ color: '#cf1322', display: 'block', marginTop: 4 }}>
-                        警告：此操作极其危险，可能导致系统不稳定，仅在必要时执行！
-                      </Text>
-                    </Paragraph>
-                  </div>
-                </Space>
-                <div style={{ textAlign: 'right' }}>
-                  <Button 
-                    danger 
-                    type="primary" 
-                    icon={<SyncOutlined />} 
-                    onClick={showRebuildModal}
+              <Form
+                form={websiteForm}
+                onFinish={handleWebsiteSubmit}
+                layout="vertical"
+                initialValues={{ website: settings.website }}
+              >
+                <Card bordered={false}>
+                  <Paragraph>
+                    配置网站基本信息，包括名称和备案信息。
+                  </Paragraph>
+                  
+                  <Form.Item
+                    name={['website', 'name']}
+                    label="网站名称"
+                    rules={[{ required: true, message: '请输入网站名称' }]}
                   >
-                    重建映射关系
+                    <Input placeholder="请输入网站名称，例如：饭卡管理系统" />
+                  </Form.Item>
+                  
+                  <Form.Item
+                    name={['website', 'domain']}
+                    label="网站域名"
+                  >
+                    <Input placeholder="请输入网站域名，例如：https://xuancan.example.com" />
+                  </Form.Item>
+                  
+                  <Divider />
+                  
+                  <Title level={5}>备案信息</Title>
+                  <Form.Item
+                    name={['website', 'icp_beian']}
+                    label="ICP备案信息"
+                  >
+                    <Input placeholder="请输入ICP备案信息，例如：沪ICP备12345678号-1" />
+                  </Form.Item>
+                  
+                  <Form.Item
+                    name={['website', 'public_sec_beian']}
+                    label="公安部备案信息"
+                  >
+                    <Input placeholder="请输入公安部备案信息，例如：沪网安备31011302000001号" />
+                  </Form.Item>
+                </Card>
+                
+                <div style={{ marginTop: 16, textAlign: 'center' }}>
+                  <Button 
+                    type="primary" 
+                    htmlType="submit" 
+                    loading={submitting}
+                    icon={<SettingOutlined />}
+                    size="large"
+                  >
+                    保存网站设置
                   </Button>
                 </div>
-              </Space>
-            </Card>
-          </Card>
-          
-          <div style={{ marginTop: 16, textAlign: 'center' }}>
-            <Button 
-              type="primary" 
-              htmlType="submit" 
-              loading={submitting}
-              icon={<SettingOutlined />}
-              size="large"
+              </Form>
+            </TabPane>
+            
+            {/* 钉钉配置标签页 */}
+            <TabPane 
+              tab={
+                <span>
+                  <DingdingOutlined />
+                  钉钉配置
+                </span>
+              } 
+              key="dingtalk"
             >
-              保存设置
-            </Button>
-          </div>
-        </Form>
+              <Form
+                form={dingtalkForm}
+                onFinish={handleDingtalkSubmit}
+                layout="vertical"
+                initialValues={{ dingtalk: settings.dingtalk }}
+              >
+                <Card bordered={false}>
+                  <Paragraph>
+                    配置钉钉应用信息，用于学生通过钉钉登录和接收提醒。
+                  </Paragraph>
+                  
+                  <Form.Item
+                    name={['dingtalk', 'app_key']}
+                    label="应用AppKey"
+                  >
+                    <Input placeholder="请输入钉钉应用的AppKey" />
+                  </Form.Item>
+                  
+                  <Form.Item
+                    name={['dingtalk', 'app_secret']}
+                    label="应用AppSecret"
+                  >
+                    <Input.Password placeholder="请输入钉钉应用的AppSecret" />
+                  </Form.Item>
+                  
+                  <Form.Item
+                    name={['dingtalk', 'agent_id']}
+                    label="应用AgentID"
+                  >
+                    <Input placeholder="请输入钉钉应用的AgentID" />
+                  </Form.Item>
+                  
+                  <Form.Item
+                    name={['dingtalk', 'corp_id']}
+                    label="企业CorpID"
+                  >
+                    <Input placeholder="请输入钉钉企业的CorpID" />
+                  </Form.Item>
+                  
+                  <Divider />
+                  
+                  <Title level={5} style={{ color: '#cf1322' }}>高级操作</Title>
+                  <Card 
+                    type="inner" 
+                    style={{ borderColor: '#ffccc7', backgroundColor: '#fff2f0', marginBottom: 16 }}
+                  >
+                    <Space direction="vertical" style={{ width: '100%' }}>
+                      <Space align="start">
+                        <ExclamationCircleOutlined style={{ color: '#cf1322', fontSize: 16 }} />
+                        <div>
+                          <Text strong style={{ color: '#cf1322' }}>重建家长-学生映射关系</Text>
+                          <Paragraph style={{ marginTop: 8 }}>
+                            此操作会从钉钉获取所有班级信息和家长-学生关系，并将其存储在系统数据库中。
+                            <Text strong style={{ color: '#cf1322', display: 'block', marginTop: 4 }}>
+                              警告：此操作极其危险，可能导致系统不稳定，仅在必要时执行！
+                            </Text>
+                          </Paragraph>
+                        </div>
+                      </Space>
+                      <div style={{ textAlign: 'right' }}>
+                        <Button 
+                          danger 
+                          type="primary" 
+                          icon={<SyncOutlined />} 
+                          onClick={showRebuildModal}
+                        >
+                          重建映射关系
+                        </Button>
+                      </div>
+                    </Space>
+                  </Card>
+                </Card>
+                
+                <div style={{ marginTop: 16, textAlign: 'center' }}>
+                  <Button 
+                    type="primary" 
+                    htmlType="submit" 
+                    loading={submitting}
+                    icon={<SettingOutlined />}
+                    size="large"
+                  >
+                    保存钉钉设置
+                  </Button>
+                </div>
+              </Form>
+            </TabPane>
+          </Tabs>
+        </Card>
         
         {/* 重建映射对话框 */}
         <Modal
