@@ -15,7 +15,7 @@ const DingtalkAuth = () => {
   const [error, setError] = useState(null);
   const [students, setStudents] = useState([]);
   const [showStudentSelect, setShowStudentSelect] = useState(false);
-  const { dingtalk_corp_id, name } = useWebsite();
+  const { dingtalk_corp_id } = useWebsite();
 
   useEffect(() => {
     // 如果已登录，重定向到对应页面

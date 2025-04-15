@@ -24,7 +24,6 @@ const Footer = () => {
       padding: '15px 50px',
       color: '#666', 
       fontSize: '14px',
-      height: 'auto',
       background: 'transparent',
       height: 'auto'
     }}>

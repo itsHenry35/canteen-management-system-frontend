@@ -73,6 +73,11 @@ const routes = [
     path: '/',
     element: <Navigate to="/login" replace />,
   },
+  // 添加通配符路由，捕获所有未匹配的路径
+  {
+    path: '*',
+    element: <Navigate to="/login" replace />,
+  },
 ];
 
 export default routes;

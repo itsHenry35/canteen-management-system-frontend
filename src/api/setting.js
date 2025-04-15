@@ -24,3 +24,11 @@ export const rebuildParentStudentMapping = () => {
     method: 'post'
   });
 };
+
+// 获取重建家长-学生映射关系的日志
+export const getRebuildMappingLogs = () => {
+  return request({
+    url: '/admin/rebuild-mapping/logs',
+    method: 'get'
+  });
+};

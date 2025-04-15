@@ -2,22 +2,29 @@ import React, { useState, useEffect } from 'react';
 import { 
   Card, Form, Input, Button, message, Typography, 
   Spin, Divider, Modal, Progress,
-  Space, Tabs
+  Space, Tabs, Alert
 } from 'antd';
 import {
   SettingOutlined,
   SyncOutlined,
   ExclamationCircleOutlined,
   GlobalOutlined,
-  DingdingOutlined
+  DingdingOutlined,
+  FileTextOutlined
 } from '@ant-design/icons';
 import PageLayout from '../../../components/PageLayout';
-import { getSettings, updateSettings, rebuildParentStudentMapping } from '../../../api/setting';
+import { 
+  getSettings, 
+  updateSettings, 
+  rebuildParentStudentMapping,
+  getRebuildMappingLogs 
+} from '../../../api/setting';
 import { Link, useSearchParams } from 'react-router-dom';
 
 const { Title, Paragraph, Text } = Typography;
 const { TabPane } = Tabs;
 const { confirm } = Modal;
+const { TextArea } = Input;
 
 const Settings = () => {
   const [loading, setLoading] = useState(false);
@@ -49,6 +56,11 @@ const Settings = () => {
   const [rebuildLoading, setRebuildLoading] = useState(false);
   const [countdownInterval, setCountdownInterval] = useState(null);
 
+  // 日志相关状态
+  const [logsModalVisible, setLogsModalVisible] = useState(false);
+  const [logs, setLogs] = useState([]);
+  const [logsLoading, setLogsLoading] = useState(false);
+
   // 获取系统设置
   const fetchSettings = async () => {
     try {
@@ -71,6 +83,25 @@ const Settings = () => {
       message.error('获取系统设置失败');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // 获取重建日志
+  const fetchRebuildLogs = async () => {
+    try {
+      setLogsLoading(true);
+      const response = await getRebuildMappingLogs();
+      if (response && response.logs) {
+        setLogs(response.logs);
+      } else {
+        setLogs([]);
+      }
+    } catch (error) {
+      console.error('获取重建日志失败:', error);
+      message.error('获取重建日志失败');
+      setLogs([]);
+    } finally {
+      setLogsLoading(false);
     }
   };
 
@@ -154,6 +185,17 @@ const Settings = () => {
       onCancel() {
       },
     });
+  };
+
+  // 显示日志对话框
+  const showLogsModal = () => {
+    setLogsModalVisible(true);
+    fetchRebuildLogs();
+  };
+
+  // 刷新日志
+  const handleRefreshLogs = () => {
+    fetchRebuildLogs();
   };
 
   // 开始倒计时
@@ -355,14 +397,23 @@ const Settings = () => {
                         </div>
                       </Space>
                       <div style={{ textAlign: 'right' }}>
-                        <Button 
-                          danger 
-                          type="primary" 
-                          icon={<SyncOutlined />} 
-                          onClick={showRebuildModal}
-                        >
-                          重建映射关系
-                        </Button>
+                        <Space>
+                          <Button 
+                            type="primary"
+                            icon={<FileTextOutlined />} 
+                            onClick={showLogsModal}
+                          >
+                            查看日志与状态
+                          </Button>
+                          <Button 
+                            danger 
+                            type="primary" 
+                            icon={<SyncOutlined />} 
+                            onClick={showRebuildModal}
+                          >
+                            重建映射关系
+                          </Button>
+                        </Space>
                       </div>
                     </Space>
                   </Card>
@@ -422,12 +473,11 @@ const Settings = () => {
               <li>重建系统数据库中的映射关系</li>
             </ul>
             <Paragraph strong style={{ color: '#cf1322' }}>
-              此操作可能导致：
+              此操作会导致：
             </Paragraph>
             <ul>
-              <li>系统暂时无响应</li>
-              <li>钉钉接口调用频率限制</li>
-              <li>数据临时不一致</li>
+              <li>学生暂时无法使用钉钉登录</li>
+              <li>达到钉钉接口月调用限制（频繁调用）</li>
             </ul>
             <Paragraph>
               请确保您了解此操作的风险，并且确实需要执行此操作。
@@ -447,6 +497,48 @@ const Settings = () => {
               </div>
             )}
           </div>
+        </Modal>
+
+        {/* 日志查看对话框 */}
+        <Modal
+          title="重建家长-学生映射关系日志"
+          visible={logsModalVisible}
+          onCancel={() => setLogsModalVisible(false)}
+          width={700}
+          footer={[
+            <Button 
+              key="refresh" 
+              type="primary"
+              onClick={handleRefreshLogs}
+              loading={logsLoading}
+            >
+              刷新
+            </Button>,
+            <Button 
+              key="close" 
+              onClick={() => setLogsModalVisible(false)}
+            >
+              关闭
+            </Button>
+          ]}
+        >
+          <Spin spinning={logsLoading}>
+            {logs.length > 0 ? (
+              <TextArea
+                value={logs.join('\n')}
+                readOnly
+                autoSize={{ minRows: 15, maxRows: 20 }}
+                style={{ fontFamily: 'monospace' }}
+              />
+            ) : (
+              <Alert
+                message="暂无日志数据"
+                description="系统未找到重建家长-学生映射关系的日志记录。"
+                type="info"
+                showIcon
+              />
+            )}
+          </Spin>
         </Modal>
       </Spin>
     </PageLayout>
