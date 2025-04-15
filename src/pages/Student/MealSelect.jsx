@@ -293,6 +293,9 @@ const MealSelect = () => {
                         alt="餐食图片"
                         style={{ width: '100%', maxHeight: 300, objectFit: 'cover' }}
                       />
+                      <Text type="secondary" style={{ display: 'block', textAlign: 'center', marginTop: 4 }}>
+                        点击图片可查看大图
+                      </Text>
                     </div>
                   </Col>
                   <Col span={24} md={12}>
