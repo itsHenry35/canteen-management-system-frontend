@@ -32,3 +32,11 @@ export const getRebuildMappingLogs = () => {
     method: 'get'
   });
 };
+
+// 获取定时任务运行日志
+export const getSchedulerLogs = () => {
+  return request({
+    url: '/admin/scheduler/logs',
+    method: 'get'
+  });
+};
