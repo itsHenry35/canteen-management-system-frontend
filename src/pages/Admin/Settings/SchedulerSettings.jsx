@@ -3,13 +3,13 @@ import {
   Form, Input, Button, Typography, Switch, TimePicker, 
   InputNumber, Space, message, Card, Modal, 
   Alert, Tag, List, Grid,
-  Spin
+  Spin,
+  Divider
 } from 'antd';
 import { 
   SettingOutlined, ReloadOutlined, 
   CheckCircleOutlined, CloseCircleOutlined,
-  FieldTimeOutlined, ClockCircleOutlined
-} from '@ant-design/icons';
+  FieldTimeOutlined, ClockCircleOutlined} from '@ant-design/icons';
 import { updateSettings, getSchedulerLogs } from '../../../api/setting';
 import dayjs from 'dayjs';
 
@@ -109,14 +109,21 @@ const SchedulerSettings = ({ settings, onSettingsUpdated }) => {
       name: '清理过期餐食',
       description: '清理过期的餐食数据，减轻系统负担',
       schedule: '每天 ' + (settings.scheduler?.cleanup_time || '02:00'),
-      status: settings.scheduler?.enabled ? 'active' : 'inactive'
+      status: settings.scheduler?.enabled && settings.scheduler?.cleanup_enabled ? 'active' : 'inactive'
     },
     {
       key: '2',
       name: '选餐截止提醒',
       description: '在选餐截止前发送提醒通知',
       schedule: '选餐截止前 ' + (settings.scheduler?.reminder_before_end_hours || '6') + ' 小时',
-      status: settings.scheduler?.enabled ? 'active' : 'inactive'
+      status: settings.scheduler?.enabled && settings.scheduler?.reminder_enabled ? 'active' : 'inactive'
+    },
+    {
+      key: '3',
+      name: '自动选餐',
+      description: '为未选餐的学生自动随机分配餐食',
+      schedule: '选餐截止时自动执行',
+      status: settings.scheduler?.enabled && settings.scheduler?.auto_select_enabled ? 'active' : 'inactive'
     }
   ];
 
@@ -154,18 +161,21 @@ const SchedulerSettings = ({ settings, onSettingsUpdated }) => {
           scheduler: {
             enabled: settings.scheduler?.enabled || false,
             cleanup_time: dayjs(settings.scheduler?.cleanup_time || '02:00', 'HH:mm'),
-            reminder_before_end_hours: settings.scheduler?.reminder_before_end_hours || 6
+            reminder_before_end_hours: settings.scheduler?.reminder_before_end_hours || 6,
+            cleanup_enabled: settings.scheduler?.cleanup_enabled !== false, // 默认为true
+            reminder_enabled: settings.scheduler?.reminder_enabled !== false, // 默认为true
+            auto_select_enabled: settings.scheduler?.auto_select_enabled || false // 默认为false
           }
         }}
       >
         <Card bordered={false}>
           <Paragraph>
-            配置系统的定时任务，包括清理过期餐食和选餐截止提醒。
+            配置系统的定时任务，包括清理过期餐食、选餐截止提醒和自动选餐功能。
           </Paragraph>
           
           <Form.Item
             name={['scheduler', 'enabled']}
-            label="启用定时任务"
+            label="全局启用定时任务"
             valuePropName="checked"
           >
             <Switch 
@@ -173,6 +183,52 @@ const SchedulerSettings = ({ settings, onSettingsUpdated }) => {
               unCheckedChildren="已禁用" 
             />
           </Form.Item>
+          
+          <Paragraph>
+            <Text type="secondary">
+              启用或禁用各项定时任务：
+            </Text>
+          </Paragraph>
+          
+          <div style={{ marginBottom: 16 }}>
+            <Space direction="vertical" style={{ width: '100%' }} size="middle">
+              <Form.Item
+                name={['scheduler', 'cleanup_enabled']}
+                label="启用清理过期餐食任务"
+                valuePropName="checked"
+              >
+                <Switch 
+                  checkedChildren="已启用" 
+                  unCheckedChildren="已禁用" 
+                />
+              </Form.Item>
+              
+              <Form.Item
+                name={['scheduler', 'reminder_enabled']}
+                label="启用选餐截止提醒任务"
+                valuePropName="checked"
+              >
+                <Switch 
+                  checkedChildren="已启用" 
+                  unCheckedChildren="已禁用" 
+                />
+              </Form.Item>
+              
+              <Form.Item
+                name={['scheduler', 'auto_select_enabled']}
+                label="启用自动选餐任务"
+                valuePropName="checked"
+                tooltip="启用后，系统将在选餐截止时为未选餐的学生随机分配A餐或B餐"
+              >
+                <Switch 
+                  checkedChildren="已启用" 
+                  unCheckedChildren="已禁用" 
+                />
+              </Form.Item>
+            </Space>
+          </div>
+          
+          <Divider dashed />
           
           <Form.Item
             name={['scheduler', 'cleanup_time']}
@@ -201,7 +257,6 @@ const SchedulerSettings = ({ settings, onSettingsUpdated }) => {
           
           <Title level={5} style={{ marginTop: 16 }}>任务列表</Title>
           
-          {/* 在大屏幕上使用列表显示，更适合移动设备 */}
           <List
             grid={{ 
               gutter: 16,
@@ -209,8 +264,8 @@ const SchedulerSettings = ({ settings, onSettingsUpdated }) => {
               sm: 1,
               md: 2,
               lg: 2,
-              xl: 2,
-              xxl: 2,
+              xl: 3,
+              xxl: 3,
             }}
             dataSource={taskListData}
             renderItem={renderTaskItem}
