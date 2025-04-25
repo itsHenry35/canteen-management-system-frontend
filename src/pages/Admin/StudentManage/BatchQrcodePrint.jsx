@@ -1,6 +1,5 @@
 import React, { forwardRef } from 'react';
-import { QRCodeCanvas as QRCode } from 'qrcode.react';
-import { Typography } from 'antd';
+import { Typography, QRCode } from 'antd';
 import './printStyles.css';
 
 const { Text } = Typography;
@@ -29,8 +28,7 @@ const BatchQrcodePrint = forwardRef(({ qrcodeDataList }, ref) => {
                   <QRCode
                     value={student.qrData}
                     size={160}
-                    level="H"
-                    includeMargin={true}
+                    errorLevel="H"
                   />
                 </div>
               </div>

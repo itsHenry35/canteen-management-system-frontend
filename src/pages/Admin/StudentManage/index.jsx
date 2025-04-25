@@ -4,7 +4,8 @@ import {
   Popconfirm, message, Typography, Card,
   Radio, Tag, Row, Col, Divider, Alert,
   Dropdown, Menu, Progress, Select,
-  Spin
+  Spin,
+  QRCode
 } from 'antd';
 import { 
   PlusOutlined, EditOutlined, DeleteOutlined,
@@ -14,7 +15,6 @@ import {
   DashOutlined, ImportOutlined,
   FileExcelOutlined
 } from '@ant-design/icons';
-import { QRCodeCanvas as QRCode } from 'qrcode.react';
 import { useReactToPrint } from 'react-to-print';
 import PageLayout from '../../../components/PageLayout';
 import BatchQrcodePrint from './BatchQrcodePrint';
@@ -71,8 +71,10 @@ const StudentManage = () => {
   // 分页相关设置
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 100, // 一页显示100条数据
-    showSizeChanger: false,
+    defaultPageSize: 100, // 一页显示100条数据
+    showSizeChanger: true,
+    pageSizeOptions: [100, 500, 1000, 5000],
+    showQuickJumper: true,
     showTotal: (total) => `共 ${total} 条数据`
   });
 
@@ -1196,13 +1198,12 @@ const fetchStudentsSelections = async (mealId) => {
             <p>二维码数据获取失败，请重试</p>
           </div>
         ) : (
-          <div style={{ textAlign: 'center' }}>
+          <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             {currentQrcode?.data && (
               <QRCode 
                 value={currentQrcode.data} 
                 size={200}
-                level="H"
-                includeMargin={true}
+                errorLevel="H"
               />
             )}
             <p style={{ marginTop: 10 }}>学生可使用此二维码在食堂窗口取餐</p>

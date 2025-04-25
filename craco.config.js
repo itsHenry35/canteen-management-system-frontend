@@ -1,4 +1,4 @@
-const { whenProd } = require('@craco/craco');
+const { whenProd } = require('craco');
 
 module.exports = {
   webpack: {

@@ -103,10 +103,8 @@
     }
     
     .print-container {
-      width: 210mm;
-      height: 297mm;
       margin: 0;
-      padding: 10mm;
+      padding: 0mm;
     }
     
     /* 不打印的元素 */
