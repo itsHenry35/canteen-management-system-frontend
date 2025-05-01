@@ -19,7 +19,7 @@ import { useReactToPrint } from 'react-to-print';
 import PageLayout from '../../../components/PageLayout';
 import BatchQrcodePrint from './BatchQrcodePrint';
 import TextArea from 'antd/lib/input/TextArea';
-import { batchSelectMeals, getAllMeals, getMealSelections } from '../../../api/meal';
+import { batchSelectMeals, getAllMeals, getMealSelections, importMealSelections } from '../../../api/meal';
 import { createStudent, deleteStudent, getAllStudents, getStudentQRCodeData, updateStudent } from '../../../api/student';
 import { Link } from 'react-router-dom';
 import * as XLSX from 'xlsx';
@@ -44,7 +44,7 @@ const StudentManage = () => {
   const [loadingMeals, setLoadingMeals] = useState(false);
   const [loadingSelections, setLoadingSelections] = useState(false);
 
-  // 批量导入相关状态
+  // 批量导入学生相关状态
   const [batchImportVisible, setBatchImportVisible] = useState(false);
   const [batchImportForm] = Form.useForm();
   const [batchImportLoading, setBatchImportLoading] = useState(false);
@@ -55,6 +55,18 @@ const StudentManage = () => {
   const [importFailed, setImportFailed] = useState(0);
   const [showProgress, setShowProgress] = useState(false);
   const [importCompleted, setImportCompleted] = useState(false);
+
+  // 批量导入选餐相关状态
+  const [batchImportMealVisible, setBatchImportMealVisible] = useState(false);
+  const [batchImportMealForm] = Form.useForm();
+  const [batchImportMealLoading, setBatchImportMealLoading] = useState(false);
+  const [importMealProgress, setImportMealProgress] = useState(0);
+  const [importMealTotal, setImportMealTotal] = useState(0);
+  const [importMealCurrent, setImportMealCurrent] = useState(0);
+  const [importMealSuccess, setImportMealSuccess] = useState(0);
+  const [importMealFailed, setImportMealFailed] = useState(0);
+  const [showMealProgress, setShowMealProgress] = useState(false);
+  const [importMealCompleted, setImportMealCompleted] = useState(false);
 
   // 筛选状态
   const [filteredInfo, setFilteredInfo] = useState({});
@@ -90,7 +102,7 @@ const StudentManage = () => {
       }
     } catch (error) {
       console.error('获取餐食列表失败:', error);
-      message.error('获取餐食列表失败', error.data.message);
+      message.error('获取餐食列表失败：' + error.data.message);
       setMeals([]);
     } finally {
       setLoadingMeals(false);
@@ -134,7 +146,7 @@ const fetchStudentsSelections = async (mealId) => {
     }
   } catch (error) {
     console.error('获取学生选餐情况失败:', error);
-    message.error('获取学生选餐情况失败', error.data.message);
+    message.error('获取学生选餐情况失败：' + error.data.message);
     setStudents([]);
   } finally {
     setLoadingSelections(false);
@@ -150,7 +162,7 @@ const fetchStudentsSelections = async (mealId) => {
       }
     } catch (error) {
       console.error('Failed to fetch students:', error);
-      message.error('获取学生列表失败', error.data.message);
+      message.error('获取学生列表失败：' + error.data.message);
     } finally {
       setLoading(false);
     }
@@ -223,7 +235,6 @@ const fetchStudentsSelections = async (mealId) => {
     }
   };
 
-  // 获取学生列表
 
   // 显示添加学生对话框
   const showAddModal = () => {
@@ -232,7 +243,7 @@ const fetchStudentsSelections = async (mealId) => {
     setVisible(true);
   };
 
-  // 显示批量导入对话框
+  // 显示批量导入学生对话框
   const showBatchImportModal = () => {
     batchImportForm.resetFields();
     setBatchImportVisible(true);
@@ -301,19 +312,146 @@ const fetchStudentsSelections = async (mealId) => {
       // 完成后刷新学生列表
       if (currentMealId) {
         fetchStudentsSelections(currentMealId);
+      } else {
+        fetchAllStudents();
       }
       
       // 标记导入完成
       setImportCompleted(true);
       
       // 不立即关闭对话框，让用户查看导入结果
-      message.success(`批量导入完成：成功 ${importSuccess} 条，失败 ${importFailed} 条`);
+      message.success(`批量导入学生完成`);
     } catch (error) {
-      console.error('Batch import failed:', error);
-      message.error('批量导入失败');
+      console.error('Batch import students failed:', error);
+      message.error('批量导入学生失败');
     } finally {
       setBatchImportLoading(false);
     }
+  };
+
+  // 显示批量导入选餐对话框
+  const showBatchImportMealModal = () => {
+    if (!currentMealId) {
+      message.error('请先选择一个餐食');
+      return;
+    }
+    
+    batchImportMealForm.resetFields();
+    setBatchImportMealVisible(true);
+    setShowMealProgress(false);
+    setImportMealProgress(0);
+    setImportMealTotal(0);
+    setImportMealCurrent(0);
+    setImportMealSuccess(0);
+    setImportMealFailed(0);
+    setImportMealCompleted(false);
+  };
+
+  // 处理批量导入选餐
+  const handleBatchImportMeal = async () => {
+    if (!currentMealId) {
+      message.error('请先选择一个餐食');
+      return;
+    }
+    
+    try {
+      const values = await batchImportMealForm.validateFields();
+      
+      // 解析文本数据
+      const lines = values.selectionData.trim().split('\n');
+      if (lines.length === 0) {
+        message.error('请输入有效的选餐数据');
+        return;
+      }
+      
+      setBatchImportMealLoading(true);
+      setShowMealProgress(true);
+      setImportMealTotal(lines.length);
+      setImportMealCurrent(0);
+      setImportMealSuccess(0);
+      setImportMealFailed(0);
+      
+      // 用于存储失败的行
+      const failedLines = [];
+      
+      // 逐行处理选餐数据
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+        
+        // 以空格分割 学生ID/钉钉ID A/B餐
+        const parts = line.split(/\s+/);
+        if (parts.length < 2) {
+          setImportMealFailed(prev => prev + 1);
+          failedLines.push(line);
+          setImportMealCurrent(i + 1);
+          setImportMealProgress(Math.floor(((i + 1) / lines.length) * 100));
+          continue;
+        }
+        
+        const id = parts[0];
+        const mealType = parts[1].toUpperCase(); // 确保餐食类型是大写
+        
+        // 检查餐食类型是否有效
+        if (mealType !== 'A' && mealType !== 'B') {
+          setImportMealFailed(prev => prev + 1);
+          failedLines.push(line);
+          setImportMealCurrent(i + 1);
+          setImportMealProgress(Math.floor(((i + 1) / lines.length) * 100));
+          continue;
+        }
+        
+        // 根据用户选择的识别方式确定导入参数
+        const method = values.idMethod;
+        
+        try {
+          // 调用API导入选餐
+          await importMealSelections({
+            method: method,
+            id: id,
+            meal_type: mealType,
+            meal_id: currentMealId
+          });
+          setImportMealSuccess(prev => prev + 1);
+        } catch (error) {
+          console.error('Failed to import meal selection:', error);
+          setImportMealFailed(prev => prev + 1);
+          failedLines.push(line);
+        }
+        
+        // 更新进度
+        setImportMealCurrent(i + 1);
+        setImportMealProgress(Math.floor(((i + 1) / lines.length) * 100));
+      }
+      
+      // 完成后刷新学生列表
+      await fetchStudentsSelections(currentMealId);
+      
+      // 更新文本框，只保留失败的行
+      if (failedLines.length > 0) {
+        batchImportMealForm.setFieldsValue({
+          selectionData: failedLines.join('\n')
+        });
+      } else {
+        batchImportMealForm.setFieldsValue({
+          selectionData: ''
+        });
+      }
+      
+      // 标记导入完成
+      setImportMealCompleted(true);
+      message.success('批量导入选餐完成');
+    } catch (error) {
+      console.error('Batch import meal selections failed:', error);
+      message.error('批量导入选餐失败');
+    } finally {
+      setBatchImportMealLoading(false);
+    }
+  };
+
+  // 批量导入选餐对话框取消/关闭
+  const handleBatchImportMealCancel = () => {
+    setBatchImportMealVisible(false);
   };
 
   // 导出Excel功能
@@ -322,7 +460,7 @@ const fetchStudentsSelections = async (mealId) => {
       message.loading({ content: '正在生成Excel文件...', key: 'exporting' });
 
       // 获取当前选中的餐食信息（如果有）
-      let mealName = "学生名单";
+      let mealName = "未选择餐食";
       let mealInfo = null;
       if (currentMealId) {
         const meal = meals.find(m => m.id === currentMealId);
@@ -497,7 +635,7 @@ const fetchStudentsSelections = async (mealId) => {
     }
   };
 
-  // 批量导入对话框取消/关闭
+  // 批量导入学生对话框取消/关闭
   const handleBatchImportCancel = () => {
     setBatchImportVisible(false);
   };
@@ -537,7 +675,7 @@ const fetchStudentsSelections = async (mealId) => {
       }
     } catch (error) {
       console.error('Failed to get QR code data:', error);
-      message.error('获取二维码数据失败', error.data.message);
+      message.error('获取二维码数据失败：' + error.data.message);
       setCurrentQrcode({
         studentName: student.full_name,
         loading: false,
@@ -568,10 +706,12 @@ const fetchStudentsSelections = async (mealId) => {
       // 刷新选餐数据
       if (currentMealId) {
         fetchStudentsSelections(currentMealId);
+      } else {
+        fetchAllStudents();
       }
     } catch (error) {
       console.error('Operation failed:', error);
-      message.error('操作失败', error.data.message);
+      message.error('操作失败：' + error.data.message);
     } finally {
       setConfirmLoading(false);
     }
@@ -591,10 +731,12 @@ const fetchStudentsSelections = async (mealId) => {
       // 刷新选餐数据
       if (currentMealId) {
         fetchStudentsSelections(currentMealId);
+      } else {
+        fetchAllStudents();
       }
     } catch (error) {
       console.error('Failed to delete student:', error);
-      message.error('学生删除失败', error.data.message);
+      message.error('学生删除失败：' + error.data.message);
     }
   };
 
@@ -617,10 +759,12 @@ const fetchStudentsSelections = async (mealId) => {
       // 刷新选餐数据
       if (currentMealId) {
         fetchStudentsSelections(currentMealId);
+      } else {
+        fetchAllStudents();
       }
     } catch (error) {
       console.error('Failed to batch delete students:', error);
-      message.error('批量删除学生失败', error.data.message);
+      message.error('批量删除学生失败：' + error.data.message);
     }
   };
 
@@ -693,7 +837,7 @@ const fetchStudentsSelections = async (mealId) => {
       fetchStudentsSelections(currentMealId);
     } catch (error) {
       console.error('Failed to batch select meals:', error);
-      message.error('批量选餐失败', error.data.message);
+      message.error('批量选餐失败：' + error.data.message);
     } finally {
       setSubmitting(false);
     }
@@ -725,7 +869,7 @@ const fetchStudentsSelections = async (mealId) => {
       fetchStudentsSelections(currentMealId);
     } catch (error) {
       console.error('Failed to select meal:', error);
-      message.error('选餐失败', error.data.message);
+      message.error('选餐失败：' + error.data.message);
     }
   };
 
@@ -768,7 +912,7 @@ const fetchStudentsSelections = async (mealId) => {
       setBatchQrcodeVisible(true);
     } catch (error) {
       console.error('Failed to generate batch QR codes:', error);
-      message.error('生成批量二维码失败', error.data.message);
+      message.error('生成批量二维码失败：' + error.data.message);
     } finally {
       setPrintLoading(false);
     }
@@ -995,7 +1139,7 @@ const fetchStudentsSelections = async (mealId) => {
             {getCurrentMealInfo()}
             
             <div className="operation-area" style={{ marginBottom: 16 }}>
-              <Row justify="space-between" align="middle">
+              <Row gutter={[16, 16]}>
                 <Col>
                   <Space>
                     <Button 
@@ -1010,7 +1154,7 @@ const fetchStudentsSelections = async (mealId) => {
                       icon={<ImportOutlined />}
                       onClick={showBatchImportModal}
                     >
-                      批量导入
+                      批量导入学生
                     </Button>
                     <Button icon={<ReloadOutlined />} onClick={clearAllFilters}>
                       清除筛选
@@ -1025,6 +1169,14 @@ const fetchStudentsSelections = async (mealId) => {
                       onClick={showBatchSelectModal}
                     >
                       批量选餐
+                    </Button>
+                    <Button 
+                      type="primary"
+                      icon={<ImportOutlined />}
+                      disabled={!currentMealId}
+                      onClick={showBatchImportMealModal}
+                    >
+                      批量导入选餐
                     </Button>
                     <Button 
                       type="primary"
@@ -1173,6 +1325,78 @@ const fetchStudentsSelections = async (mealId) => {
                 </div>
               </div>
               <Progress percent={importProgress} />
+            </div>
+          )}
+        </Form>
+      </Modal>
+
+      {/* 批量导入选餐对话框 */}
+      <Modal
+        title="批量导入选餐"
+        visible={batchImportMealVisible}
+        onOk={handleBatchImportMeal}
+        onCancel={handleBatchImportMealCancel}
+        confirmLoading={batchImportMealLoading}
+        width={600}
+        footer={
+          importMealCompleted ? 
+          [
+            <Button key="close" onClick={handleBatchImportMealCancel}>
+              关闭
+            </Button>
+          ] : 
+          [
+            <Button key="cancel" onClick={handleBatchImportMealCancel}>
+              取消
+            </Button>,
+            <Button key="submit" type="primary" loading={batchImportMealLoading} onClick={handleBatchImportMeal}>
+              确定
+            </Button>
+          ]
+        }
+      >
+        <Form
+          form={batchImportMealForm}
+          layout="vertical"
+          initialValues={{ idMethod: 'student_id' }}
+        >
+          <Form.Item
+            name="idMethod"
+            label="识别方式"
+            rules={[{ required: true, message: '请选择识别方式' }]}
+          >
+            <Radio.Group>
+              <Radio value="student_id">学生ID</Radio>
+              <Radio value="dingtalk_id">钉钉ID</Radio>
+            </Radio.Group>
+          </Form.Item>
+          
+          <Form.Item
+            name="selectionData"
+            label="选餐数据"
+            rules={[{ required: true, message: '请输入选餐数据' }]}
+            extra="每行一条选餐记录，格式为：学生ID/钉钉ID A/B (空格分隔)"
+          >
+            <TextArea 
+              rows={10} 
+              placeholder="例如：
+      123 A
+      456 B
+      student_id789 A
+      manager7353 B"
+            />
+          </Form.Item>
+          
+          {showMealProgress && (
+            <div style={{ marginTop: 16 }}>
+              <div style={{ marginBottom: 8 }}>
+                <Text>导入进度：{importMealCurrent}/{importMealTotal}</Text>
+                <div style={{ float: 'right' }}>
+                  <Text type="success">成功: {importMealSuccess}</Text>
+                  <Text type="danger" style={{ marginLeft: 8 }}>失败: {importMealFailed}</Text>
+                </div>
+              </div>
+              <Progress percent={importMealProgress} />
             </div>
           )}
         </Form>

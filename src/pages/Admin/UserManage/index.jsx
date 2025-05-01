@@ -104,6 +104,7 @@ const UserManage = () => {
       fetchUsers();
     } catch (error) {
       console.error('Failed to delete user:', error);
+      message.error('删除用户失败：' + error.data.message);
     }
   };
 
@@ -231,6 +232,7 @@ const UserManage = () => {
                   <Option value="admin">管理员</Option>
                   <Option value="canteen_a">食堂A餐工作人员</Option>
                   <Option value="canteen_b">食堂B餐工作人员</Option>
+                  <Option value="canteen_test">食堂测试人员</Option>
                 </Select>
               </Space>
             </div>

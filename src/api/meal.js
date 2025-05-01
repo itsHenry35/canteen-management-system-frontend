@@ -69,6 +69,15 @@ export const batchSelectMeals = (data) => {
   });
 };
 
+// 批量导入选餐
+export const importMealSelections = (data) => {
+  return request({
+    url: '/admin/selections/import',
+    method: 'post',
+    data
+  });
+};
+
 // 手动提醒未选餐学生
 export const notifyUnselectedStudents = (meal_id) => {
   return request({
