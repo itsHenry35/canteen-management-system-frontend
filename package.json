@@ -8,7 +8,7 @@
     "axios": "^1.8.4",
     "craco": "^0.0.3",
     "dayjs": "^1.11.13",
-    "dingtalk-jsapi": "^2.15.6",
+    "dingtalk-jsapi": "^3.0.0",
     "jwt-decode": "^4.0.0",
     "moment": "^2.30.1",
     "react": "^18.3.1",
