@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react';
-import {Card, Col, Empty, Grid, Row, Select, Spin, Statistic, Table, Typography} from 'antd';
+import {Card, Col, Empty, Grid, message, Row, Select, Spin, Statistic, Table, Typography} from 'antd';
 import {CheckCircleOutlined, ExclamationCircleOutlined, TeamOutlined} from '@ant-design/icons';
 import PageLayout from '../../components/PageLayout';
 import {getAllMealSelections} from '../../api/meal';
@@ -33,7 +33,7 @@ const AdminDashboard = () => {
                     setSelectedMeal(null);
                 }
             } catch (error) {
-                console.error('获取餐食统计数据失败:', error);
+                message.error('获取餐食统计数据失败：' + error.message);
                 setMealStats([]);
                 setSelectedMeal(null);
             } finally {

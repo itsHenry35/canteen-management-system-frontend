@@ -17,7 +17,6 @@ request.interceptors.request.use(
         return config;
     },
     error => {
-        console.error('Request error:', error);
         return Promise.reject(error);
     }
 );
@@ -41,12 +40,10 @@ request.interceptors.response.use(
             }
 
             // 返回一个被拒绝的Promise，并带上整个响应数据
-            return Promise.reject({response: response, data: res});
+            return Promise.reject({response: response, data: res, message: res.message});
         }
     },
     error => {
-        console.error('Response error:', error);
-
         // 获取当前路径，判断是否在登录页面
         const isLoginPage = window.location.pathname === '/login' || window.location.pathname === '/dingtalk_auth';
 

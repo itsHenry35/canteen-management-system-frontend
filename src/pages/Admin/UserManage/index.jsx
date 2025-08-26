@@ -30,7 +30,7 @@ const UserManage = () => {
             const data = await getAllUsers(userType);
             setUsers(data || []);
         } catch (error) {
-            console.error('Failed to fetch users:', error);
+            message.error('获取用户列表失败：' + error.message);
         } finally {
             setLoading(false);
         }
@@ -79,7 +79,7 @@ const UserManage = () => {
             setVisible(false);
             await fetchUsers();
         } catch (error) {
-            console.error('Validation failed:', error);
+            error.message('内容不合法：' + error.message);
         } finally {
             setConfirmLoading(false);
         }
@@ -97,8 +97,7 @@ const UserManage = () => {
             message.success('用户删除成功');
             await fetchUsers();
         } catch (error) {
-            console.error('Failed to delete user:', error);
-            message.error('删除用户失败：' + error.data.message);
+            message.error('删除用户失败：' + error.message);
         }
     };
 

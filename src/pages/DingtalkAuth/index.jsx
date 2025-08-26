@@ -52,27 +52,18 @@ const DingtalkAuth = () => {
                                     // 获取到免登授权码后，调用登录接口
                                     await handleLogin(result.code);
                                 } catch (err) {
-                                    // 检查是否有具体的错误消息
-                                    if (err.data && err.data.message) {
-                                        setError(err.data.message);
-                                    } else if (err.response?.data?.message) {
-                                        setError(err.response.data.message);
-                                    } else {
-                                        setError('登录失败，请重试');
-                                    }
+                                    setError('登录失败：' + err.message);
                                     setLoading(false);
                                 }
                             },
-                            onFail: (err) => {
-                                console.error('Failed to get auth code:', err);
+                            onFail: () => {
                                 setError('获取授权码失败，请重试');
                                 setLoading(false);
                             }
                         });
                     });
 
-                    dd.error((err) => {
-                        console.error('DingTalk SDK error:', err);
+                    dd.error(() => {
                         setError('钉钉初始化失败，请重试');
                         setLoading(false);
                     });
@@ -82,7 +73,6 @@ const DingtalkAuth = () => {
                     setLoading(false);
                 }
             } catch (err) {
-                console.error('Auth failed:', err);
                 setError('认证失败，请重试');
                 setLoading(false);
             }
@@ -114,15 +104,7 @@ const DingtalkAuth = () => {
                 throw new Error('登录返回数据格式错误');
             }
         } catch (err) {
-            console.error('Login failed:', err);
-            // 检查是否有具体的错误消息
-            if (err.data && err.data.message) {
-                setError(err.data.message);
-            } else if (err.response?.data?.message) {
-                setError(err.response.data.message);
-            } else {
-                setError('登录失败，请重试');
-            }
+            setError('登录失败：' + err.message)
             setLoading(false);
             throw err; // 继续抛出异常
         }

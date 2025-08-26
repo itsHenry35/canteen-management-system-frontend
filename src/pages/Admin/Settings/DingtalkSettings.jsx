@@ -60,8 +60,7 @@ const DingtalkSettings = ({settings, onSettingsUpdated}) => {
                 onSettingsUpdated();
             }
         } catch (error) {
-            console.error('Failed to update settings:', error);
-            message.error('更新钉钉设置失败');
+            message.error('更新钉钉设置失败：' + error.message);
         } finally {
             setSubmitting(false);
         }
@@ -99,8 +98,7 @@ const DingtalkSettings = ({settings, onSettingsUpdated}) => {
                 setLogs([]);
             }
         } catch (error) {
-            console.error('获取重建日志失败:', error);
-            message.error('获取重建日志失败');
+            message.error('获取重建日志失败：' + error.message);
             setLogs([]);
         } finally {
             setLogsLoading(false);
@@ -138,8 +136,7 @@ const DingtalkSettings = ({settings, onSettingsUpdated}) => {
             message.success('已成功启动重建映射过程，这可能需要一些时间');
             setRebuildModalVisible(false);
         } catch (error) {
-            console.error('Failed to rebuild mapping:', error);
-            message.error('重建映射失败');
+            message.error('重建映射失败：' + error.message);
         } finally {
             setRebuildLoading(false);
         }

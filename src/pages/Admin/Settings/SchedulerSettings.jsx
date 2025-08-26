@@ -86,8 +86,7 @@ const SchedulerSettings = ({settings, onSettingsUpdated}) => {
                 onSettingsUpdated();
             }
         } catch (error) {
-            console.error('Failed to update settings:', error);
-            message.error('更新定时任务设置失败');
+            message.error('更新定时任务设置失败：' + error.message);
         } finally {
             setSubmitting(false);
         }
@@ -104,8 +103,7 @@ const SchedulerSettings = ({settings, onSettingsUpdated}) => {
                 setLogs([]);
             }
         } catch (error) {
-            console.error('获取定时任务日志失败:', error);
-            message.error('获取定时任务日志失败');
+            message.error('获取定时任务日志失败：' + error.message);
             setLogs([]);
         } finally {
             setLogsLoading(false);

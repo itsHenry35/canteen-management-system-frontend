@@ -48,15 +48,7 @@ const Login = () => {
                 message.warning('该账户类型不支持在该应用登录');
             }
         } catch (error) {
-            // 检查是否是我们自定义的错误结构
-            if (error.data && error.data.message) {
-                setErrorMsg(error.data.message);
-            } else if (error.response?.data?.message) {
-                setErrorMsg(error.response.data.message);
-            } else {
-                console.error('Login failed:', error);
-                setErrorMsg('登录失败，请检查用户名和密码');
-            }
+            setErrorMsg('登录失败：' + error.message);
         } finally {
             setLoading(false);
         }

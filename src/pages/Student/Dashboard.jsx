@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react';
-import {Alert, Button, Card, Col, Empty, List, Row, Spin, Tag, Typography} from 'antd';
+import {Alert, Button, Card, Col, Empty, List, message, Row, Spin, Tag, Typography} from 'antd';
 import {ArrowRightOutlined, BookOutlined, CalendarOutlined, ClockCircleOutlined, UserOutlined} from '@ant-design/icons';
 import {useNavigate} from 'react-router-dom';
 import PageLayout from '../../components/PageLayout';
@@ -31,7 +31,7 @@ const StudentDashboard = () => {
                     setMeals([]);
                 }
             } catch (error) {
-                console.error('获取餐食数据失败:', error);
+                message.error('获取餐食数据失败：' + error.message);
                 setMeals([]);
             } finally {
                 setLoading(false);

@@ -75,8 +75,7 @@ const MealSelect = () => {
                     setCurrentMeal(null);
                 }
             } catch (error) {
-                console.error('获取数据失败:', error);
-                message.error('获取数据失败，请重试');
+                message.error('获取数据失败：' + error.message);
                 setMeals([]);
                 setCurrentMeal(null);
             } finally {
@@ -139,8 +138,7 @@ const MealSelect = () => {
                 meal_type: selectedMeal
             });
         } catch (error) {
-            console.error('选餐失败:', error);
-            message.error('选餐失败，请重试');
+            message.error('选餐失败：' + error.message);
         } finally {
             setSubmitting(false);
         }

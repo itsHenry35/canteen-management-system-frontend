@@ -124,8 +124,7 @@ const StudentManage = () => {
                 setMeals([]);
             }
         } catch (error) {
-            console.error('获取餐食列表失败:', error);
-            message.error('获取餐食列表失败：' + error.data.message);
+            message.error('获取餐食列表失败：' + error.message);
             setMeals([]);
         } finally {
             setLoadingMeals(false);
@@ -168,8 +167,7 @@ const StudentManage = () => {
                 setStudents([]);
             }
         } catch (error) {
-            console.error('获取学生选餐情况失败:', error);
-            message.error('获取学生选餐情况失败：' + error.data.message);
+            message.error('获取学生选餐情况失败：' + error.message);
             setStudents([]);
         } finally {
             setLoadingSelections(false);
@@ -184,8 +182,7 @@ const StudentManage = () => {
                 setStudents(response || []);
             }
         } catch (error) {
-            console.error('Failed to fetch students:', error);
-            message.error('获取学生列表失败：' + error.data.message);
+            message.error('获取学生列表失败：' + error.message);
         } finally {
             setLoading(false);
         }
@@ -253,7 +250,6 @@ const StudentManage = () => {
 
             return true; // 成功完成
         } catch (error) {
-            console.error('随机选餐失败:', error.data.message);
             throw error; // 将错误向上传递
         }
     };
@@ -323,7 +319,6 @@ const StudentManage = () => {
                     await createStudent(studentData);
                     setImportSuccess(prev => prev + 1);
                 } catch (error) {
-                    console.error('Failed to import student:', error);
                     setImportFailed(prev => prev + 1);
                 }
 
@@ -345,8 +340,7 @@ const StudentManage = () => {
             // 不立即关闭对话框，让用户查看导入结果
             message.success(`批量导入学生完成`);
         } catch (error) {
-            console.error('Batch import students failed:', error);
-            message.error('批量导入学生失败');
+            message.error('批量导入学生失败：' + error.message);
         } finally {
             setBatchImportLoading(false);
         }
@@ -437,7 +431,6 @@ const StudentManage = () => {
                     });
                     setImportMealSuccess(prev => prev + 1);
                 } catch (error) {
-                    console.error('Failed to import meal selection:', error);
                     setImportMealFailed(prev => prev + 1);
                     failedLines.push(line);
                 }
@@ -465,8 +458,7 @@ const StudentManage = () => {
             setImportMealCompleted(true);
             message.success('批量导入选餐完成');
         } catch (error) {
-            console.error('Batch import meal selections failed:', error);
-            message.error('批量导入选餐失败');
+            message.error('批量导入选餐失败：' + error.message);
         } finally {
             setBatchImportMealLoading(false);
         }
@@ -653,8 +645,7 @@ const StudentManage = () => {
 
             message.success({content: 'Excel文件已生成', key: 'exporting'});
         } catch (error) {
-            console.error('导出Excel失败:', error);
-            message.error({content: '导出Excel失败', key: 'exporting'});
+            message.error({content: '导出Excel失败：' + error.message, key: 'exporting'});
         }
     };
 
@@ -697,8 +688,7 @@ const StudentManage = () => {
                 throw new Error('Invalid QR code data');
             }
         } catch (error) {
-            console.error('Failed to get QR code data:', error);
-            message.error('获取二维码数据失败：' + error.data.message);
+            message.error('获取二维码数据失败：' + error.message);
             setCurrentQrcode({
                 studentName: student.full_name,
                 loading: false,
@@ -733,8 +723,7 @@ const StudentManage = () => {
                 await fetchAllStudents();
             }
         } catch (error) {
-            console.error('Operation failed:', error);
-            message.error('操作失败：' + error.data.message);
+            message.error('操作失败：' + error.message);
         } finally {
             setConfirmLoading(false);
         }
@@ -758,8 +747,7 @@ const StudentManage = () => {
                 await fetchAllStudents();
             }
         } catch (error) {
-            console.error('Failed to delete student:', error);
-            message.error('学生删除失败：' + error.data.message);
+            message.error('学生删除失败：' + error.message);
         }
     };
 
@@ -786,8 +774,7 @@ const StudentManage = () => {
                 await fetchAllStudents();
             }
         } catch (error) {
-            console.error('Failed to batch delete students:', error);
-            message.error('批量删除学生失败：' + error.data.message);
+            message.error('批量删除学生失败：' + error.message);
         }
     };
 
@@ -859,8 +846,7 @@ const StudentManage = () => {
             // 刷新选餐数据
             await fetchStudentsSelections(currentMealId);
         } catch (error) {
-            console.error('Failed to batch select meals:', error);
-            message.error('批量选餐失败：' + error.data.message);
+            message.error('批量选餐失败：' + error.message);
         } finally {
             setSubmitting(false);
         }
@@ -891,8 +877,7 @@ const StudentManage = () => {
             // 刷新选餐数据
             await fetchStudentsSelections(currentMealId);
         } catch (error) {
-            console.error('Failed to select meal:', error);
-            message.error('选餐失败：' + error.data.message);
+            message.error('选餐失败：' + error.message);
         }
     };
 
@@ -927,15 +912,14 @@ const StudentManage = () => {
                         });
                     }
                 } catch (error) {
-                    console.error(`Failed to get QR code for student ${student.id}:`, error);
+                    message.error(`获取学生 ${student.full_name} 的二维码失败：` + error.message);
                 }
             }
 
             setQrcodeDataList(qrcodeList);
             setBatchQrcodeVisible(true);
         } catch (error) {
-            console.error('Failed to generate batch QR codes:', error);
-            message.error('生成批量二维码失败：' + error.data.message);
+            message.error('生成批量二维码失败：' + error.message);
         } finally {
             setPrintLoading(false);
         }

@@ -70,8 +70,7 @@ const MenuManage = () => {
             const data = await getAllMeals();
             setMeals(data || []);
         } catch (error) {
-            console.error('获取餐食失败:', error);
-            message.error('获取餐食失败');
+            message.error('获取餐食失败：' + error.message);
         } finally {
             setLoading(false);
         }
@@ -103,8 +102,7 @@ const MenuManage = () => {
             setMealImage(base64);
             message.success('图片已准备好上传');
         } catch (error) {
-            console.error('图片处理失败:', error);
-            message.error('图片处理失败');
+            message.error('图片处理失败：' + error.message);
         }
     };
 
@@ -170,8 +168,7 @@ const MenuManage = () => {
             if (error.errorFields) {
                 message.error('请检查表单填写是否正确');
             } else {
-                console.error('操作失败:', error);
-                message.error('操作失败：' + error.data.message);
+                message.error('操作失败：' + error.message);
             }
         } finally {
             setSubmitting(false);
@@ -184,8 +181,7 @@ const MenuManage = () => {
             message.success('餐食删除成功');
             await fetchMeals();
         } catch (error) {
-            console.error('删除餐食失败:', error);
-            message.error('删除餐食失败');
+            message.error('删除餐食失败：' + error.message);
         }
     };
 
@@ -208,8 +204,7 @@ const MenuManage = () => {
             message.success('提醒已发送');
             setNotifyModalVisible(false);
         } catch (error) {
-            console.error('发送提醒失败:', error);
-            message.error('发送提醒失败');
+            message.error('发送提醒失败：' + error.message);
         } finally {
             setNotifying(false);
         }

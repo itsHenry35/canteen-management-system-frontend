@@ -2,12 +2,14 @@ import {useEffect, useState} from 'react';
 import {Button, Card, Divider, Form, Input, message, Typography} from 'antd';
 import {SettingOutlined} from '@ant-design/icons';
 import {updateSettings} from '../../../api/setting';
+import {useWebsite} from '../../../contexts/WebsiteContext';
 
 const {Title, Paragraph} = Typography;
 
 const WebsiteSettings = ({settings, onSettingsUpdated}) => {
     const [form] = Form.useForm();
     const [submitting, setSubmitting] = useState(false);
+    const {refreshWebsiteInfo} = useWebsite();
 
     // 设置表单初始值
     useEffect(() => {
@@ -34,13 +36,17 @@ const WebsiteSettings = ({settings, onSettingsUpdated}) => {
             await updateSettings(updatedSettings);
             message.success('网站设置更新成功');
 
+            // 刷新网站信息Context
+            if (refreshWebsiteInfo) {
+                await refreshWebsiteInfo();
+            }
+
             // 通知父组件设置已更新
             if (onSettingsUpdated) {
                 onSettingsUpdated();
             }
         } catch (error) {
-            console.error('Failed to update settings:', error);
-            message.error('更新网站设置失败');
+            message.error('更新网站设置失败：' + error.message);
         } finally {
             setSubmitting(false);
         }
@@ -63,14 +69,14 @@ const WebsiteSettings = ({settings, onSettingsUpdated}) => {
                     label="网站名称"
                     rules={[{required: true, message: '请输入网站名称'}]}
                 >
-                    <Input placeholder="请输入网站名称，例如：饭卡管理系统"/>
+                    <Input placeholder="请输入网站名称，例如：食堂饭卡管理系统"/>
                 </Form.Item>
 
                 <Form.Item
                     name={['website', 'domain']}
                     label="网站域名"
                 >
-                    <Input placeholder="请输入网站域名，例如：https://xuancan.example.com"/>
+                    <Input placeholder="请输入网站域名，例如：https://canteen.example.com"/>
                 </Form.Item>
 
                 <Divider/>

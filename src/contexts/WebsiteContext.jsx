@@ -1,5 +1,6 @@
 import {createContext, useContext, useEffect, useState} from 'react';
 import {getWebsiteInfo} from '../api/website';
+import {message} from "antd";
 
 // 默认值
 const defaultWebsiteInfo = {
@@ -17,22 +18,30 @@ const WebsiteContext = createContext(defaultWebsiteInfo);
 export const WebsiteProvider = ({children}) => {
     const [websiteInfo, setWebsiteInfo] = useState(defaultWebsiteInfo);
 
-    useEffect(() => {
-        const fetchWebsiteInfo = async () => {
-            try {
-                const data = await getWebsiteInfo();
-                setWebsiteInfo({...data, loading: false});
-            } catch (error) {
-                console.error('获取网站信息失败:', error);
-                setWebsiteInfo(prev => ({...prev, loading: false}));
-            }
-        };
+    const fetchWebsiteInfo = async () => {
+        try {
+            setWebsiteInfo(prev => ({...prev, loading: true}));
+            const data = await getWebsiteInfo();
+            setWebsiteInfo({...data, loading: false});
+        } catch (error) {
+            message.error('获取网站信息失败：' + error.message);
+            setWebsiteInfo(prev => ({...prev, loading: false}));
+        }
+    };
 
+    useEffect(() => {
         fetchWebsiteInfo();
     }, []);
 
+    // 从api返回的名字更新title
+    useEffect(() => {
+        if (websiteInfo.name && websiteInfo.name !== '正在加载...') {
+            document.title = websiteInfo.name;
+        }
+    }, [websiteInfo.name]);
+
     return (
-        <WebsiteContext.Provider value={websiteInfo}>
+        <WebsiteContext.Provider value={{...websiteInfo, refreshWebsiteInfo: fetchWebsiteInfo}}>
             {children}
         </WebsiteContext.Provider>
     );

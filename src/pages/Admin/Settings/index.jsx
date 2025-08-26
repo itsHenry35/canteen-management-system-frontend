@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {Card, Spin, Tabs, Typography} from 'antd';
+import {Card, message, Spin, Tabs, Typography} from 'antd';
 import {DingdingOutlined, FieldTimeOutlined, GlobalOutlined} from '@ant-design/icons';
 import PageLayout from '../../../components/PageLayout';
 import WebsiteSettings from './WebsiteSettings';
@@ -44,7 +44,7 @@ const Settings = () => {
             const data = await getSettings();
             setSettings(data);
         } catch (error) {
-            console.error('Failed to fetch settings:', error);
+            message.error('获取系统设置失败：' + error.message);
         } finally {
             setLoading(false);
         }
