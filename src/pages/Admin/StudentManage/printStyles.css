@@ -2,59 +2,59 @@
 .print-container {
     width: 100%;
     padding: 10px;
-  }
-  
-  .print-header {
+}
+
+.print-header {
     margin-bottom: 20px;
-  }
-  
-  .qrcode-row {
+}
+
+.qrcode-row {
     width: 100%;
     display: flex;
     position: relative;
     margin-bottom: 10px;
-  }
-  
-  .qrcode-item {
+}
+
+.qrcode-item {
     flex: 1;
     display: flex;
     position: relative;
     padding: 15px;
     border: 1px solid #f0f0f0;
-  }
-  
-  .qrcode-content {
+}
+
+.qrcode-content {
     width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-  }
-  
-  .student-info {
+}
+
+.student-info {
     display: flex;
     flex-direction: column;
     align-items: center;
     margin-bottom: 10px;
-  }
-  
-  .qrcode-wrapper {
+}
+
+.qrcode-wrapper {
     display: flex;
     justify-content: center;
     margin: 10px 0;
-  }
-  
-  /* 裁剪线 */
-  .vertical-cut-line {
+}
+
+/* 裁剪线 */
+.vertical-cut-line {
     position: absolute;
     right: 0;
     top: 0;
     height: 100%;
     display: flex;
     align-items: center;
-  }
-  
-  .horizontal-cut-line {
+}
+
+.horizontal-cut-line {
     position: absolute;
     bottom: -10px;
     left: 0;
@@ -62,60 +62,60 @@
     display: flex;
     justify-content: center;
     z-index: 10;
-  }
-  
-  .dashed-line {
+}
+
+.dashed-line {
     border: 1px dashed #aaa;
-  }
-  
-  .vertical-cut-line .dashed-line {
+}
+
+.vertical-cut-line .dashed-line {
     height: 100%;
-  }
-  
-  .horizontal-cut-line .dashed-line {
+}
+
+.horizontal-cut-line .dashed-line {
     width: 95%;
-  }
-  
-  .scissors {
+}
+
+.scissors {
     position: absolute;
     color: #aaa;
     font-size: 14px;
-  }
-  
-  .vertical-cut-line .scissors {
+}
+
+.vertical-cut-line .scissors {
     right: -8px;
     top: 50%;
     transform: translateY(-50%);
-  }
-  
-  .horizontal-cut-line .scissors {
+}
+
+.horizontal-cut-line .scissors {
     bottom: -8px;
     left: 50%;
     transform: translateX(-50%);
-  }
-  
-  /* 打印媒体查询 */
-  @media print {
+}
+
+/* 打印媒体查询 */
+@media print {
     body {
-      margin: 0;
-      padding: 0;
-      background: white;
+        margin: 0;
+        padding: 0;
+        background: white;
     }
-    
+
     .print-container {
-      margin: 0;
-      padding: 0mm;
+        margin: 0;
+        padding: 0mm;
     }
-    
+
     /* 不打印的元素 */
     .ant-modal-header,
     .ant-modal-footer,
     .ant-modal-close {
-      display: none !important;
+        display: none !important;
     }
-    
+
     /* 分页控制 */
     .qrcode-row {
-      page-break-inside: avoid;
+        page-break-inside: avoid;
     }
-  }
+}

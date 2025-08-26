@@ -4,17 +4,17 @@
     align-items: center;
     height: 100vh;
     background-color: #f0f2f5;
-  }
-  
-  .loadingContainer {
+}
+
+.loadingContainer {
     text-align: center;
     padding: 30px;
     background: white;
     border-radius: 4px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  }
-  
-  .loadingText {
+}
+
+.loadingText {
     margin-top: 16px;
     color: rgba(0, 0, 0, 0.45);
-  }
+}

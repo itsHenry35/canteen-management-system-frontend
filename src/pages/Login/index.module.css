@@ -1,38 +1,38 @@
 .container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  background-color: #f0f2f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f0f2f5;
 }
 
 .loginCard {
-  width: 100%;
-  max-width: 400px;
-  padding: 24px;
+    width: 100%;
+    max-width: 400px;
+    padding: 24px;
 }
 
 .logo {
-  text-align: center;
-  margin-bottom: 24px;
+    text-align: center;
+    margin-bottom: 24px;
 }
 
 .loginButton {
-  width: 100%;
+    width: 100%;
 }
 
 .otherLogin {
-  margin-top: 16px;
-  text-align: center;
+    margin-top: 16px;
+    text-align: center;
 }
 
 .dingTalkButton {
-  background-color: #2eabff;
-  color: white;
-  border: none;
+    background-color: #2eabff;
+    color: white;
+    border: none;
 }
 
 .dingTalkButton:hover {
-  background-color: #1e9bef;
-  color: white;
+    background-color: #1e9bef;
+    color: white;
 }
