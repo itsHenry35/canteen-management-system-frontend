@@ -1,39 +1,30 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import { createContext, useState, useEffect, useContext } from 'react';
 import { getWebsiteInfo } from '../api/website';
 
-// 创建上下文
-const WebsiteContext = createContext({
-  name: '饭卡管理系统', // 默认值
+// 默认值
+const defaultWebsiteInfo = {
+  name: '正在加载...',
   icp_beian: '',
   public_sec_beian: '',
   dingtalk_corp_id: '',
-  loading: true
-});
+  loading: true,
+};
+
+// 创建上下文
+const WebsiteContext = createContext(defaultWebsiteInfo);
 
 // 上下文提供者组件
 export const WebsiteProvider = ({ children }) => {
-  const [websiteInfo, setWebsiteInfo] = useState({
-    name: '饭卡管理系统',
-    icp_beian: '',
-    public_sec_beian: '',
-    dingtalk_corp_id: '',
-    loading: true
-  });
+  const [websiteInfo, setWebsiteInfo] = useState(defaultWebsiteInfo);
 
   useEffect(() => {
     const fetchWebsiteInfo = async () => {
       try {
         const data = await getWebsiteInfo();
-        setWebsiteInfo({
-          ...data,
-          loading: false
-        });
+        setWebsiteInfo({ ...data, loading: false });
       } catch (error) {
         console.error('获取网站信息失败:', error);
-        setWebsiteInfo(prev => ({
-          ...prev,
-          loading: false
-        }));
+        setWebsiteInfo(prev => ({ ...prev, loading: false }));
       }
     };
 
