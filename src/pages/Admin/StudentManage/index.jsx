@@ -334,9 +334,9 @@ const StudentManage = () => {
 
             // 完成后刷新学生列表
             if (currentMealId) {
-                fetchStudentsSelections(currentMealId);
+                await fetchStudentsSelections(currentMealId);
             } else {
-                fetchAllStudents();
+                await fetchAllStudents();
             }
 
             // 标记导入完成
@@ -728,9 +728,9 @@ const StudentManage = () => {
 
             // 刷新选餐数据
             if (currentMealId) {
-                fetchStudentsSelections(currentMealId);
+                await fetchStudentsSelections(currentMealId);
             } else {
-                fetchAllStudents();
+                await fetchAllStudents();
             }
         } catch (error) {
             console.error('Operation failed:', error);
@@ -753,9 +753,9 @@ const StudentManage = () => {
 
             // 刷新选餐数据
             if (currentMealId) {
-                fetchStudentsSelections(currentMealId);
+                await fetchStudentsSelections(currentMealId);
             } else {
-                fetchAllStudents();
+                await fetchAllStudents();
             }
         } catch (error) {
             console.error('Failed to delete student:', error);
@@ -781,9 +781,9 @@ const StudentManage = () => {
 
             // 刷新选餐数据
             if (currentMealId) {
-                fetchStudentsSelections(currentMealId);
+                await fetchStudentsSelections(currentMealId);
             } else {
-                fetchAllStudents();
+                await fetchAllStudents();
             }
         } catch (error) {
             console.error('Failed to batch delete students:', error);
@@ -857,7 +857,7 @@ const StudentManage = () => {
             setSelectedRowKeys([]);
 
             // 刷新选餐数据
-            fetchStudentsSelections(currentMealId);
+            await fetchStudentsSelections(currentMealId);
         } catch (error) {
             console.error('Failed to batch select meals:', error);
             message.error('批量选餐失败：' + error.data.message);
@@ -889,7 +889,7 @@ const StudentManage = () => {
             message.success(`成功设置${mealType === 'random' ? '随机' : mealType}餐`);
 
             // 刷新选餐数据
-            fetchStudentsSelections(currentMealId);
+            await fetchStudentsSelections(currentMealId);
         } catch (error) {
             console.error('Failed to select meal:', error);
             message.error('选餐失败：' + error.data.message);

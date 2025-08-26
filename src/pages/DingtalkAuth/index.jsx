@@ -36,7 +36,7 @@ const DingtalkAuth = () => {
             try {
                 // 确保钉钉SDK已加载
                 if (dd) {
-                    if (dd.env.platform == 'notInDingTalk') {
+                    if (dd.env.platform === 'notInDingTalk') {
                         // 如果不在钉钉环境中，显示错误信息
                         setError('请在钉钉客户端中打开');
                         setLoading(false);

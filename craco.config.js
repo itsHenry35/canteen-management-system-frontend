@@ -2,7 +2,7 @@ const { whenProd } = require('craco');
 
 module.exports = {
   webpack: {
-    configure: (webpackConfig, { env, paths }) => {
+    configure: (webpackConfig) => {
       // 禁用sourceMaps
       webpackConfig.devtool = false;
       

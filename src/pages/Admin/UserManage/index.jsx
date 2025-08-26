@@ -77,7 +77,7 @@ const UserManage = () => {
             }
 
             setVisible(false);
-            fetchUsers();
+            await fetchUsers();
         } catch (error) {
             console.error('Validation failed:', error);
         } finally {
@@ -95,7 +95,7 @@ const UserManage = () => {
         try {
             await deleteUser(id);
             message.success('用户删除成功');
-            fetchUsers();
+            await fetchUsers();
         } catch (error) {
             console.error('Failed to delete user:', error);
             message.error('删除用户失败：' + error.data.message);
@@ -153,7 +153,7 @@ const UserManage = () => {
                     color = 'purple';
                     icon = <ShopOutlined/>;
                     label = '食堂B餐工作人员';
-                } else if (text == 'canteen_test') {
+                } else if (text === 'canteen_test') {
                     color = 'red';
                     icon = <ShopOutlined/>;
                     label = '食堂测试人员';

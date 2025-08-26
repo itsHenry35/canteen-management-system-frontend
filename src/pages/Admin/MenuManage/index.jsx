@@ -165,7 +165,7 @@ const MenuManage = () => {
             }
 
             setModalVisible(false);
-            fetchMeals();
+            await fetchMeals();
         } catch (error) {
             if (error.errorFields) {
                 message.error('请检查表单填写是否正确');
@@ -182,7 +182,7 @@ const MenuManage = () => {
         try {
             await deleteMeal(id);
             message.success('餐食删除成功');
-            fetchMeals();
+            await fetchMeals();
         } catch (error) {
             console.error('删除餐食失败:', error);
             message.error('删除餐食失败');
