@@ -56,6 +56,7 @@ const UserManage = () => {
             full_name: record.full_name,
             role: record.role,
             password: '',
+            dingtalk_id: record.dingtalk_id,
         });
         setVisible(true);
     };
