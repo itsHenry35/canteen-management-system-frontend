@@ -3,7 +3,7 @@ import {Card, Col, Empty, Grid, message, Row, Select, Spin, Statistic, Table, Ty
 import {CheckCircleOutlined, ExclamationCircleOutlined, TeamOutlined} from '@ant-design/icons';
 import PageLayout from '../../components/PageLayout';
 import {getAllMealSelections} from '../../api/meal';
-import moment from 'moment';
+import dayjs from 'dayjs';
 
 const {Title, Text} = Typography;
 const {Option} = Select;
@@ -60,7 +60,7 @@ const AdminDashboard = () => {
 
     // 格式化日期显示
     const formatDate = (dateString) => {
-        return moment(dateString).format('YYYY-MM-DD HH:mm');
+        return dayjs(dateString).format('YYYY-MM-DD HH:mm');
     };
 
     // 根据屏幕宽度确定Col的span

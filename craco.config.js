@@ -1,17 +1,15 @@
-const { whenProd } = require('craco');
+import { whenProd } from '@craco/craco';
 
-module.exports = {
-  webpack: {
-    configure: (webpackConfig) => {
-      // 禁用sourceMaps
-      webpackConfig.devtool = false;
-      
-      // 移除生成的sourcemap文件
-      whenProd(() => {
-        webpackConfig.output.sourceMapFilename = undefined;
-      });
-      
-      return webpackConfig;
-    },
+export const webpack = {
+  configure: (webpackConfig) => {
+    // 禁用sourceMaps
+    webpackConfig.devtool = false;
+
+    // 移除生成的sourcemap文件
+    whenProd(() => {
+      webpackConfig.output.sourceMapFilename = undefined;
+    });
+
+    return webpackConfig;
   },
 };
