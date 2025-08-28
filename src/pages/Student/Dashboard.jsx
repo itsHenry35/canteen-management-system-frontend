@@ -78,50 +78,55 @@ const StudentDashboard = () => {
         }
     };
 
-    // 查找当前可选餐的餐食
-    const getSelectableMeal = () => {
-        return meals.find(meal => meal.selectable);
+    // 查找所有当前可选餐的餐食
+    const getSelectableMeals = () => {
+        return meals.filter(meal => meal.selectable);
     };
 
     // 渲染可选餐提示
     const renderSelectionAlert = () => {
-        const selectableMeal = getSelectableMeal();
+        const selectableMeals = getSelectableMeals();
 
-        if (selectableMeal) {
+        if (selectableMeals.length > 0) {
             return (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                {selectableMeals.map(selectableMeal => (
                 <Alert
+                    key={selectableMeal.meal_id}
                     message={selectableMeal.meal_type ? "您已完成选餐" : "您还未选择餐食"}
                     description={
+                    <div>
+                        {selectableMeal.meal_type ? (
                         <div>
-                            {selectableMeal.meal_type ? (
-                                <div>
-                                    您为"{selectableMeal.name}"选择了
-                                    <Tag color={selectableMeal.meal_type === 'A' ? 'success' : 'blue'}>
-                                        {selectableMeal.meal_type}餐
-                                    </Tag>
-                                    <div style={{marginTop: 8}}>
-                                        <Button type="primary"
-                                                onClick={() => handleGoToMealSelect(selectableMeal.meal_id)}>
-                                            修改选择 <ArrowRightOutlined/>
-                                        </Button>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div>
-                                    有餐食"{selectableMeal.name}"可供选择，请尽快完成选餐。
-                                    <div style={{marginTop: 8}}>
-                                        <Button type="primary"
-                                                onClick={() => handleGoToMealSelect(selectableMeal.meal_id)}>
-                                            立即选餐 <ArrowRightOutlined/>
-                                        </Button>
-                                    </div>
-                                </div>
-                            )}
+                            您为"{selectableMeal.name}"选择了
+                            <Tag color={selectableMeal.meal_type === 'A' ? 'success' : 'blue'}>
+                            {selectableMeal.meal_type}餐
+                            </Tag>
+                            <div style={{marginTop: 8}}>
+                            <Button type="primary"
+                                onClick={() => handleGoToMealSelect(selectableMeal.meal_id)}>
+                                修改选择 <ArrowRightOutlined/>
+                            </Button>
+                            </div>
                         </div>
+                        ) : (
+                        <div>
+                            有餐食"{selectableMeal.name}"可供选择，请尽快完成选餐。
+                            <div style={{marginTop: 8}}>
+                            <Button type="primary"
+                                onClick={() => handleGoToMealSelect(selectableMeal.meal_id)}>
+                                立即选餐 <ArrowRightOutlined/>
+                            </Button>
+                            </div>
+                        </div>
+                        )}
+                    </div>
                     }
                     type={selectableMeal.meal_type ? "success" : "warning"}
                     showIcon
                 />
+                ))}
+            </div>
             );
         }
 
@@ -240,7 +245,7 @@ const StudentDashboard = () => {
                                 <li>选餐时间结束后将无法修改</li>
                                 <li>如有多个学生，请点击右上角用户按钮后选择退出登录，并点击钉钉登录重新选择其他学生</li>
                                 <li>若界面显示不正常，请更新钉钉版本</li>
-                                <li>就餐时出示二维码供食堂工作人员扫描</li>
+                                <li>就餐时出示二维码或饭卡供食堂工作人员扫描</li>
                             </ul>
                         </Card>
                     </Col>

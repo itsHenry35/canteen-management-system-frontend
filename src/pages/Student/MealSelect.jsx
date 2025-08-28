@@ -17,7 +17,7 @@ import {
     Typography
 } from 'antd';
 import {CalendarOutlined, ClockCircleOutlined} from '@ant-design/icons';
-import {Link, useLocation} from 'react-router-dom';
+import {Link, useSearchParams} from 'react-router-dom';
 import PageLayout from '../../components/PageLayout';
 import {getStudentMealSelection, studentSelectMeal} from '../../api/meal';
 import dayjs from 'dayjs';
@@ -33,58 +33,56 @@ const MealSelect = () => {
     const [meals, setMeals] = useState([]);
     const [currentMeal, setCurrentMeal] = useState(null);
     const [selectedMeal, setSelectedMeal] = useState('');
-    const location = useLocation();
+    const [searchParams, setSearchParams] = useSearchParams();
 
     // 获取菜单和选餐状态
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                setLoading(true);
+    const fetchData = async () => {
+        try {
+            setLoading(true);
 
-                // 获取URL中的mealId参数
-                const queryParams = new URLSearchParams(location.search);
-                const mealIdFromURL = queryParams.get('mealId');
+            // 获取URL中的mealId参数
+            const mealIdFromURL = searchParams.get("mealId");
 
-                // 获取学生选餐信息
-                const response = await getStudentMealSelection();
+            // 获取学生选餐信息
+            const response = await getStudentMealSelection();
 
-                if (response && response.selections && response.selections.length > 0) {
-                    setMeals(response.selections);
+            if (response && response.selections && response.selections.length > 0) {
+                setMeals(response.selections);
 
-                    let targetMeal = null;
+                let targetMeal = null;
 
-                    // 先检查URL中是否有指定的餐食ID
-                    if (mealIdFromURL) {
-                        targetMeal = response.selections.find(meal => meal.meal_id.toString() === mealIdFromURL);
-                    }
-
-                    // 如果URL中没有指定餐食ID或者指定的ID不存在，则查找第一个可选餐的餐食
-                    if (!targetMeal) {
-                        targetMeal = response.selections.find(meal => meal.selectable);
-                    }
-
-                    // 如果没有可选餐的餐食，选择第一个餐食作为当前餐食
-                    if (!targetMeal) {
-                        targetMeal = response.selections[0];
-                    }
-
-                    setCurrentMeal(targetMeal);
-                    setSelectedMeal(targetMeal.meal_type || '');
-                } else {
-                    setMeals([]);
-                    setCurrentMeal(null);
+                // 先检查URL中是否有指定的餐食ID
+                if (mealIdFromURL) {
+                    targetMeal = response.selections.find(meal => meal.meal_id.toString() === mealIdFromURL);
                 }
-            } catch (error) {
-                message.error('获取数据失败：' + error.message);
+
+                // 如果URL中没有指定餐食ID或者指定的ID不存在，则查找第一个可选餐的餐食
+                if (!targetMeal) {
+                    targetMeal = response.selections.find(meal => meal.selectable);
+                }
+
+                // 如果没有可选餐的餐食，选择第一个餐食作为当前餐食
+                if (!targetMeal) {
+                    targetMeal = response.selections[0];
+                }
+
+                setCurrentMeal(targetMeal);
+                setSelectedMeal(targetMeal.meal_type || '');
+            } else {
                 setMeals([]);
                 setCurrentMeal(null);
-            } finally {
-                setLoading(false);
             }
-        };
-
+        } catch (error) {
+            message.error('获取数据失败：' + error.message);
+            setMeals([]);
+            setCurrentMeal(null);
+        } finally {
+            setLoading(false);
+        }
+    };
+    useEffect(() => {
         fetchData();
-    }, [location.search]);
+    }, []);
 
     // 处理选餐变更
     const handleMealChange = (e) => {
@@ -95,6 +93,8 @@ const MealSelect = () => {
     const handleMealSelect = (meal) => {
         setCurrentMeal(meal);
         setSelectedMeal(meal.meal_type || '');
+        // 更新地址栏
+        setSearchParams({ mealId: meal.meal_id });
     };
 
     // 提交选餐
@@ -118,28 +118,11 @@ const MealSelect = () => {
             });
 
             message.success('选餐成功');
-
-            // 更新选餐状态
-            const updatedMeals = meals.map(meal => {
-                if (meal.meal_id === currentMeal.meal_id) {
-                    return {
-                        ...meal,
-                        meal_type: selectedMeal
-                    };
-                }
-                return meal;
-            });
-
-            setMeals(updatedMeals);
-
-            // 更新当前餐食
-            setCurrentMeal({
-                ...currentMeal,
-                meal_type: selectedMeal
-            });
         } catch (error) {
             message.error('选餐失败：' + error.message);
         } finally {
+            // 重新从服务器拉取数据
+            await fetchData();
             setSubmitting(false);
         }
     };
@@ -151,7 +134,7 @@ const MealSelect = () => {
 
     // 判断餐食状态
     const getMealStatus = (meal) => {
-        if (!meal) return {text: '未知', color: ''};
+        if (!meal) return {text: '未知', color: 'default'};
 
         const now = dayjs();
         const selectionStart = dayjs(meal.selection_start_time);
@@ -302,19 +285,24 @@ const MealSelect = () => {
                         <Card title={currentMeal ? `餐食详情: ${currentMeal.name}` : '餐食详情'}>
                             {currentMeal ? (
                                 <Row gutter={16}>
-                                    <Col span={24} md={12}>
-                                        <div style={{marginBottom: 16}}>
-                                            <Image
-                                                src={currentMeal.image_path}
-                                                alt="餐食图片"
-                                                style={{width: '100%', maxHeight: 300, objectFit: 'cover'}}
-                                            />
-                                            <Text type="secondary"
-                                                  style={{display: 'block', textAlign: 'center', marginTop: 4}}>
-                                                点击图片可查看大图
-                                            </Text>
-                                        </div>
-                                    </Col>
+                                    { currentMeal.image_path ? (
+                                        <Col span={24} md={12}>
+                                            <div style={{marginBottom: 16, textAlign: 'center'}}>
+                                                <Image
+                                                    src={currentMeal.image_path}
+                                                    alt="餐食图片"
+                                                    style={{width: '100%', maxHeight: 300, objectFit: 'cover'}}
+                                                />
+                                                <Text type="secondary"
+                                                    style={{display: 'block', textAlign: 'center', marginTop: 4}}>
+                                                    点击图片可查看大图
+                                                </Text>
+                                            </div>
+                                        </Col>
+                                    ) : (
+                                        <Empty description="无图片" style={{height: 60, padding: 0}}
+                                            image={Empty.PRESENTED_IMAGE_SIMPLE}/>
+                                    )}
                                     <Col span={24} md={12}>
                                         <div style={{marginBottom: 16}}>
                                             <Title level={5}>餐食信息</Title>
@@ -334,13 +322,31 @@ const MealSelect = () => {
                                             </div>
 
                                             {currentMeal.meal_type && (
-                                                <div style={{marginTop: 8}}>
-                                                    <Text strong>您已选择：</Text>
-                                                    <Tag
-                                                        color={currentMeal.meal_type === 'A' ? 'success' : 'processing'}
-                                                        style={{marginLeft: 4}}>
-                                                        {currentMeal.meal_type}餐
-                                                    </Tag>
+                                                <div>
+                                                    <div style={{marginTop: 8}}>
+                                                        <Text strong>您已选择：</Text>
+                                                        <Tag
+                                                            color={currentMeal.meal_type === 'A' ? 'success' : 'processing'}
+                                                            style={{marginLeft: 4}}>
+                                                            {currentMeal.meal_type}餐
+                                                        </Tag>
+                                                    </div>
+                                                    <div style={{marginTop: 8}}>
+                                                        <Text strong>操作时间：</Text>
+                                                        <Tag
+                                                            color="processing"
+                                                            style={{marginLeft: 4}}>
+                                                            {formatDate(currentMeal.updated_at)}
+                                                        </Tag>
+                                                    </div>
+                                                    <div style={{marginTop: 8}}>
+                                                        <Text strong>操作人：</Text>
+                                                        <Tag
+                                                            color="processing"
+                                                            style={{marginLeft: 4}}>
+                                                            {currentMeal.operator}
+                                                        </Tag>
+                                                    </div>
                                                 </div>
                                             )}
                                         </div>

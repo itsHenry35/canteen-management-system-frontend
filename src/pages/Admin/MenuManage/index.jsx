@@ -51,8 +51,6 @@ const MenuManage = () => {
     const [modalVisible, setModalVisible] = useState(false);
     const [currentMeal, setCurrentMeal] = useState(null);
     const [mealImage, setMealImage] = useState(null);
-    const [previewVisible, setPreviewVisible] = useState(false);
-    const [previewImage, setPreviewImage] = useState('');
     const [form] = Form.useForm();
     const [notifyModalVisible, setNotifyModalVisible] = useState(false);
     const [notifyingMeal, setNotifyingMeal] = useState(null);
@@ -113,8 +111,8 @@ const MenuManage = () => {
         setModalVisible(true);
         setTimeout(() => {
             form.setFieldsValue({
-                selection_time: [dayjs(), dayjs().add(1, 'day')],
-                effective_time: [dayjs().add(2, 'day'), dayjs().add(2, 'day').endOf('day')]
+                selection_time: [dayjs().second(0), dayjs().add(1, 'day').second(0)],
+                effective_time: [dayjs().add(2, 'day').second(0), dayjs().add(3, 'day').startOf('day')]
             });
         }, 0);
     };
@@ -185,11 +183,6 @@ const MenuManage = () => {
         }
     };
 
-    const handlePreview = (imagePath) => {
-        setPreviewImage(imagePath);
-        setPreviewVisible(true);
-    };
-
     const handleNotifyUnselected = (record) => {
         setNotifyingMeal(record);
         setNotifyModalVisible(true);
@@ -253,8 +246,6 @@ const MenuManage = () => {
                             src={text}
                             alt="餐食图片"
                             style={{width: 80, height: 60, objectFit: 'cover'}}
-                            preview={false}
-                            onClick={() => handlePreview(text)}
                         />
                     ) : (
                         <Empty description="无图片" style={{height: 60, padding: 0}}
@@ -414,7 +405,7 @@ const MenuManage = () => {
                         >
                             <RangePicker
                                 showTime
-                                format="YYYY-MM-DD HH:mm:ss"
+                                format="YYYY-MM-DD HH:mm"
                                 style={{width: '100%'}}
                                 placeholder={['选餐开始时间', '选餐结束时间']}
                             />
@@ -427,7 +418,7 @@ const MenuManage = () => {
                         >
                             <RangePicker
                                 showTime
-                                format="YYYY-MM-DD HH:mm:ss"
+                                format="YYYY-MM-DD HH:mm"
                                 style={{width: '100%'}}
                                 placeholder={['生效开始时间', '生效结束时间']}
                             />
@@ -467,15 +458,6 @@ const MenuManage = () => {
                             )}
                         </Form.Item>
                     </Form>
-                </Modal>
-
-                <Modal
-                    visible={previewVisible}
-                    title="图片预览"
-                    footer={null}
-                    onCancel={() => setPreviewVisible(false)}
-                >
-                    <img alt="预览" style={{width: '100%'}} src={previewImage}/>
                 </Modal>
 
                 <Modal
